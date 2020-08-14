@@ -21,6 +21,7 @@ public:
 
     bool OnCompileCommand(const char* sCommandLine);
 
+    toml::value CoFranceConfig;
     string DllPath;
 
     void LoadConfigFile();

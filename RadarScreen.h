@@ -5,6 +5,8 @@
 #include <math.h>
 #include "Constants.h"
 #include <vector>
+#include <algorithm>
+#include "CoFrancePlugIn.h"
 
 
 using namespace Gdiplus;
@@ -14,10 +16,10 @@ using namespace EuroScopePlugIn;
 class RadarScreen : public CRadarScreen
 {
 public:
-	RadarScreen();
+	RadarScreen(CoFrancePlugIn* CoFrancepluginInstance);
 	~RadarScreen();
 
-	toml::value Config;
+	CoFrancePlugIn* CoFrancepluginInstance;
 
 	//---OnRefresh------------------------------------------------------
 

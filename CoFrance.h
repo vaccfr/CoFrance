@@ -24,7 +24,7 @@ public:
 // Overrides
 public:
 	virtual BOOL InitInstance();
-	virtual BOOL ExitInstance();
+
 	CoFrancePlugIn* gpMyPlugin = NULL;
 	GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR gdiplusToken;

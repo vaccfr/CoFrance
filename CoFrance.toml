@@ -1,8 +1,30 @@
 [colours]
-sector_ceiling_text = [255, 255, 255]
+sector_vertical_limits = [75, 41, 41, 41]
 
-[sector_ceilings]
-  [sector_ceilings.lfff]
-  text = "660\r\n000"
-  position = ["N049.42.52.524", "E002.54.55.332"]
-  size = 50
+[[sector_vertical_limit]]
+text = "295\r\n000"
+position = ["N048.54.35.916", "E000.31.07.566"]
+size = 40
+controller_me = "FF"
+controller_others = ["RR","RRU"]
+
+[[sector_vertical_limit]]
+text = "295\r\n000"
+position = ["N050.00.28.922", "E002.46.35.408"]
+size = 40
+controller_me = "FF"
+controller_others = ["EE","EEU"]
+
+[[sector_vertical_limit]]
+text = "195\r\n000"
+position = ["N047.52.23.054", "E001.57.42.380"]
+size = 30
+controller_me = "FF"
+controller_others=["BB","BBU"]
+
+[[sector_vertical_limit]]
+text = "660\r\n195"
+position = ["N047.25.35.052", "E004.48.26.087"]
+size = 30
+controller_me = "FF"
+controller_others=["EE"]

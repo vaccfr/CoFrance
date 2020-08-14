@@ -12,7 +12,7 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
     DllPath = DllPathFile;
     DllPath.resize(DllPath.size() - strlen("CoFrance.dll"));
     
-    //LoadConfigFile();
+    LoadConfigFile();
 
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
@@ -23,13 +23,13 @@ CoFrancePlugIn::~CoFrancePlugIn()
 
 CRadarScreen* CoFrancePlugIn::OnRadarScreenCreated(const char* sDisplayName, bool NeedRadarContent, bool GeoReferenced, bool CanBeSaved, bool CanBeCreated)
 {
-    return new RadarScreen();
+    return new RadarScreen(this);
 }
 
 bool CoFrancePlugIn::OnCompileCommand(const char* sCommandLine)
 {
     if (strcmp(sCommandLine, ".cofrance reload") == 0) {
-        //LoadConfigFile();
+        LoadConfigFile();
         return true;
     }
 
@@ -41,8 +41,7 @@ void CoFrancePlugIn::LoadConfigFile()
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Reading config file from " + DllPath + "\\CoFrance.toml").c_str(), false, false, false, false, false);
 
     try {
-        ifstream ifs(DllPath + "\\CoFrance.toml", std::ios_base::binary);
-        //Shared::CoFranceConfig = toml::parse(ifs, "CoFrance.toml");
+        CoFranceConfig = toml::parse(DllPath + "\\CoFrance.toml");
 
         DisplayUserMessage("Message", "CoFrance PlugIn", "Config file loaded!", false, false, false, false, false);
     }

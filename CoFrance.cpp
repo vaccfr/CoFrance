@@ -58,18 +58,11 @@ CCoFranceApp theApp;
 BOOL CCoFranceApp::InitInstance()
 {
 	CWinApp::InitInstance();
-	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+	
 	return TRUE;
 }
 
 // CCoFranceApp shutdown
-
-BOOL CCoFranceApp::ExitInstance()
-{
-	CWinApp::ExitInstance();
-	GdiplusShutdown(gdiplusToken);
-	return TRUE;
-}
 
 //---EuroScopePlugInInit-----------------------------------------------
 
@@ -77,13 +70,15 @@ void __declspec (dllexport) EuroScopePlugInInit(EuroScopePlugIn::CPlugIn** ppPlu
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState())
 
+	GdiplusStartup(&theApp.gdiplusToken, &theApp.gdiplusStartupInput, NULL);
+
 		// create the instance
-		* ppPlugInInstance = theApp.gpMyPlugin = new CoFrancePlugIn();
+	* ppPlugInInstance = theApp.gpMyPlugin = new CoFrancePlugIn();
 }
 
 //---EuroScopePlugInExit-----------------------------------------------
 
 void __declspec (dllexport) EuroScopePlugInExit(void)
 {
-	
+	GdiplusShutdown(theApp.gdiplusToken);
 }
