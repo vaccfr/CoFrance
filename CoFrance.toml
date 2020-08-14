@@ -1,0 +1,8 @@
+[colours]
+sector_ceiling_text = [255, 255, 255]
+
+[sector_ceilings]
+  [sector_ceilings.lfff]
+  text = "660\r\n000"
+  position = ["N049.42.52.524", "E002.54.55.332"]
+  size = 50
