@@ -24,7 +24,7 @@ public:
     toml::value CoFranceConfig;
     string DllPath;
 
-    void LoadConfigFile();
+    void LoadConfigFile(bool fromWeb = false);
 
     void Log(string s)
     {

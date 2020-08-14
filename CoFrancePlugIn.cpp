@@ -36,12 +36,30 @@ bool CoFrancePlugIn::OnCompileCommand(const char* sCommandLine)
     return false;
 }
 
-void CoFrancePlugIn::LoadConfigFile()
+void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
 {
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Reading config file from " + DllPath + "\\CoFrance.toml").c_str(), false, false, false, false, false);
 
     try {
-        CoFranceConfig = toml::parse(DllPath + "\\CoFrance.toml");
+        if (fromWeb) {
+            httplib::Client cli(CONFIG_ONLINE_URL_BASE);
+            if (auto res = cli.Get(CONFIG_ONLINE_URL_PATH)) {
+                if (res->status == 200)
+                    CoFranceConfig = toml::parse(res->body);
+                else
+                    fromWeb = false;
+            }
+            else 
+                fromWeb = false;
+                
+
+            if (!fromWeb)
+                DisplayUserMessage("Message", "CoFrance PlugIn", "Error loading web config, reverting to local file!", false, false, false, false, false);
+                
+        }
+
+        if (!fromWeb)
+            CoFranceConfig = toml::parse(DllPath + "\\CoFrance.toml");
 
         DisplayUserMessage("Message", "CoFrance PlugIn", "Config file loaded!", false, false, false, false, false);
     }

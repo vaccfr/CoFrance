@@ -12,6 +12,8 @@
 #include <gdiplus.h>
 #include <toml.hpp>
 #include <iostream>
+#include "httplib.h"
+#include <Windows.h>
 #pragma comment(lib, "gdiplus.lib")
 
 
