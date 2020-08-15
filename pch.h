@@ -12,6 +12,7 @@
 #include <gdiplus.h>
 #include <toml.hpp>
 #include <iostream>
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 #include <Windows.h>
 #pragma comment(lib, "gdiplus.lib")

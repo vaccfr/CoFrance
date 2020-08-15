@@ -44,8 +44,11 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
         if (fromWeb) {
             httplib::Client cli(CONFIG_ONLINE_URL_BASE);
             if (auto res = cli.Get(CONFIG_ONLINE_URL_PATH)) {
-                if (res->status == 200)
-                    CoFranceConfig = toml::parse(res->body);
+                if (res->status == 200) {
+                    std::istringstream is(res->body, std::ios_base::binary | std::ios_base::in);
+
+                    CoFranceConfig = toml::parse(is, "std::string");
+                }
                 else
                     fromWeb = false;
             }
