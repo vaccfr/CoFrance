@@ -4,6 +4,7 @@
 #include <string>
 
 using namespace EuroScopePlugIn;
+using namespace Gdiplus;
 using namespace std;
 
 class CoFrancePlugIn :
@@ -21,10 +22,18 @@ public:
 
     bool OnCompileCommand(const char* sCommandLine);
 
+    void OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget, int ItemCode, int TagData, char sItemString[16], int* pColorCode, COLORREF* pRGB, double* pFontSize);
+
+    void OnTimer(int Counter);
+
     toml::value CoFranceConfig;
+    string DetailedAircraft;
     string DllPath;
 
     void LoadConfigFile(bool fromWeb = true);
+
+    GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
 
     void Log(string s)
     {

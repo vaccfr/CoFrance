@@ -70,8 +70,6 @@ void __declspec (dllexport) EuroScopePlugInInit(EuroScopePlugIn::CPlugIn** ppPlu
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState())
 
-	GdiplusStartup(&theApp.gdiplusToken, &theApp.gdiplusStartupInput, NULL);
-
 		// create the instance
 	* ppPlugInInstance = theApp.gpMyPlugin = new CoFrancePlugIn();
 }
@@ -80,5 +78,5 @@ void __declspec (dllexport) EuroScopePlugInInit(EuroScopePlugIn::CPlugIn** ppPlu
 
 void __declspec (dllexport) EuroScopePlugInExit(void)
 {
-	GdiplusShutdown(theApp.gdiplusToken);
+	
 }

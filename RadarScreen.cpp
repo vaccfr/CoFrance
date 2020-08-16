@@ -8,12 +8,15 @@ RadarScreen::RadarScreen(CoFrancePlugIn* CoFrancepluginInstance)
 
 RadarScreen::~RadarScreen()
 {
-	delete CoFrancepluginInstance;
+	
 }
 
 void RadarScreen::OnRefresh(HDC hDC, int Phase)
 {
 	Graphics g(hDC);
+	g.SetPageUnit(UnitPixel);
+	g.SetSmoothingMode(SmoothingModeAntiAlias);
+
 	try {
 
 		auto sector_ceiling_text_color = toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sector_vertical_limits");
@@ -68,6 +71,79 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 			}
 
+		}
+
+		// Drawing of AC Symbols and trails
+		if (Phase == EuroScopePlugIn::REFRESH_PHASE_BEFORE_TAGS) {
+			int SymbolSize = toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "ac_symbols", "size");
+
+			for (CRadarTarget radarTarget = GetPlugIn()->RadarTargetSelectFirst(); radarTarget.IsValid();
+				radarTarget = GetPlugIn()->RadarTargetSelectNext(radarTarget))
+			{
+				
+				// We skip invalid targets
+				if (!radarTarget.IsValid() || (!radarTarget.GetPosition().GetTransponderC() && !radarTarget.GetPosition().GetTransponderI()))
+					continue;
+
+				// We skip targets slower than 50kts
+				if (radarTarget.GetPosition().GetReportedGS() < 50)
+					continue;
+
+				Color AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_not_concerned"));
+
+				CFlightPlan CorrFp = radarTarget.GetCorrelatedFlightPlan();
+				if (CorrFp.IsValid()) {
+					if (CorrFp.GetState() == FLIGHT_PLAN_STATE_COORDINATED)
+						AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_notified"));
+
+					if (CorrFp.GetState() == FLIGHT_PLAN_STATE_TRANSFER_TO_ME_INITIATED || CorrFp.GetState() == FLIGHT_PLAN_STATE_TRANSFER_FROM_ME_INITIATED)
+						AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_transferred"));
+
+					if (CorrFp.GetState() == FLIGHT_PLAN_STATE_ASSUMED)
+						AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_assumed"));
+
+					if (CorrFp.GetState() == FLIGHT_PLAN_STATE_REDUNDANT)
+						AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_redundant"));
+				}
+
+				if (this->CoFrancepluginInstance->DetailedAircraft == string(radarTarget.GetCallsign())) {
+					AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_redundant"));
+				}
+
+				// We can now draw the ac symbol
+				POINT TargetCenter = ConvertCoordFromPositionToPixel(radarTarget.GetPosition().GetPosition());
+				g.DrawEllipse(&Pen(AcColor), Rect(TargetCenter.x - SymbolSize, TargetCenter.y - SymbolSize, SymbolSize*2, SymbolSize * 2));
+				
+				int TrailSize = SymbolSize;
+				int NumberOfTrails = toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "ac_symbols", "number_of_trails");
+				CRadarTargetPositionData previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPreviousPosition(radarTarget.GetPosition()));
+				CPosition compareToPos = radarTarget.GetPosition().GetPosition();
+				for (int j = 0; j < NumberOfTrails; j++) {
+					POINT pCoordNative = ConvertCoordFromPositionToPixel(previousPos.GetPosition());
+					Point pCoord(pCoordNative.x, pCoordNative.y);
+
+					int LengthOfLine = TrailSize * 2;
+					LengthOfLine = LengthOfLine - ((TrailSize*2) / NumberOfTrails) * j;
+
+					if (LengthOfLine <= 0)
+						continue;
+
+					Point LeftSide, RightSide;
+					LeftSide.X = pCoord.X - LengthOfLine / 2;
+					LeftSide.Y = pCoord.Y;
+
+					RightSide.X = pCoord.X + LengthOfLine / 2;
+					RightSide.Y = pCoord.Y;
+
+					LeftSide = rotatePoint(pCoord, DegToRad(previousPos.GetPosition().DirectionTo(compareToPos)), LeftSide);
+					RightSide = rotatePoint(pCoord, DegToRad(previousPos.GetPosition().DirectionTo(compareToPos)), RightSide);
+
+					g.DrawLine(&Pen(AcColor), LeftSide, RightSide);
+
+					compareToPos = previousPos.GetPosition();
+					previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPreviousPosition(previousPos));
+				}
+			}
 		}
 	} 
 	catch (const std::exception& exc) {

@@ -10,8 +10,6 @@
 #include "resource.h"		// main symbols
 #include "CoFrancePlugIn.h"
 
-using namespace Gdiplus;
-
 // CCoFranceApp
 // See CoFrance.cpp for the implementation of this class
 //
@@ -26,7 +24,6 @@ public:
 	virtual BOOL InitInstance();
 
 	CoFrancePlugIn* gpMyPlugin = NULL;
-	GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR gdiplusToken;
+
 	DECLARE_MESSAGE_MAP()
 };

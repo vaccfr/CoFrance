@@ -25,7 +25,7 @@ public:
 
 	void OnRefresh(HDC hDC, int Phase);
 
-	inline virtual void OnAsrContentToBeClosed(void)
+	inline void OnAsrContentToBeClosed()
 	{
 		delete this;
 	};
@@ -74,7 +74,6 @@ public:
 		g->DrawString(wstring(text.begin(), text.end()).c_str(), wcslen(wstring(text.begin(), text.end()).c_str()), LevelFontF, PointF(Gdiplus::REAL(pt.x), Gdiplus::REAL(pt.y)), &SolidBrush(c));
 
 	}
-
 
 	void Log(string s)
 	{

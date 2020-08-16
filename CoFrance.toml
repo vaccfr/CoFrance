@@ -1,5 +1,13 @@
 [colours]
 sector_vertical_limits = [75, 41, 41, 41]
+ac_not_concerned = [142, 142, 142]
+ac_notified = [84, 179, 108]
+ac_assumed = [109, 109, 109]
+ac_transferred = [169, 202, 119]
+ac_redundant = [0, 187, 187]
+
+[ac_symbols]
+size = 5
 
 [[sector_vertical_limit]]
 text = "295\r\n000"
