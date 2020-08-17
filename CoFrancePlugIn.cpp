@@ -29,8 +29,11 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
     RegisterTagItemType("Scratchpad Indicator (Detail)", CoFranceTags::SCRATCHPAD_INDIC);
 
     RegisterTagItemType("Conflict group (Detail)", CoFranceTags::CONFLICT_GROUP_DETAIL);
+    RegisterTagItemType("Conflict group (Tagged)", CoFranceTags::CONFLICT_GROUP_TAGGED);
 
     RegisterTagItemType("RFL", CoFranceTags::RFL);
+
+    RegisterTagItemFunction("Assign Conflict Group", CoFranceTags::FUNCTION_CONFLICT_POPUP);
 
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
@@ -42,7 +45,10 @@ CoFrancePlugIn::~CoFrancePlugIn()
 
 CRadarScreen* CoFrancePlugIn::OnRadarScreenCreated(const char* sDisplayName, bool NeedRadarContent, bool GeoReferenced, bool CanBeSaved, bool CanBeCreated)
 {
-    return new RadarScreen(this);
+    if (CanLoadRadarScreen)
+        return new RadarScreen(this);
+    else
+        return NULL;
 }
 
 bool CoFrancePlugIn::OnCompileCommand(const char* sCommandLine)
@@ -66,15 +72,33 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
     }
 
     if (ItemCode == CoFranceTags::SCRATCHPAD_INDIC) {
-        string txt = "¢";
+        string txt = CoFranceCharacters::Pen;
         if (strlen(FlightPlan.GetControllerAssignedData().GetScratchPadString()) > 0)
             txt = FlightPlan.GetControllerAssignedData().GetScratchPadString();
 
-        strcpy_s(sItemString, 16, txt.c_str());
+        strcpy_s(sItemString, 16, txt.substr(0, 15).c_str());
     }
 
     if (ItemCode == CoFranceTags::CONFLICT_GROUP_DETAIL) {
-        strcpy_s(sItemString, 16, "¥");
+        if (ConflictGroups.find(FlightPlan.GetCallsign()) != ConflictGroups.end()) {
+            strcpy_s(sItemString, 16, ConflictGroups[FlightPlan.GetCallsign()].c_str());
+            *pColorCode = TAG_COLOR_RGB_DEFINED;
+            *pRGB = GetConflictGroupColor(this->CoFranceConfig, ConflictGroups[FlightPlan.GetCallsign()].c_str());
+        }
+        else {
+            strcpy_s(sItemString, 16, CoFranceCharacters::Moon.c_str());
+        }
+    }
+
+    if (ItemCode == CoFranceTags::CONFLICT_GROUP_TAGGED) {
+        if (ConflictGroups.find(FlightPlan.GetCallsign()) != ConflictGroups.end()) {
+            strcpy_s(sItemString, 16, ConflictGroups[FlightPlan.GetCallsign()].c_str());
+            *pColorCode = TAG_COLOR_RGB_DEFINED;
+            *pRGB = GetConflictGroupColor(this->CoFranceConfig, ConflictGroups[FlightPlan.GetCallsign()].c_str());
+        }
+        else {
+            strcpy_s(sItemString, 16, "");
+        }
     }
 
     if (ItemCode == CoFranceTags::DUMMY) {
@@ -112,7 +136,7 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
 
         strcpy_s(sItemString, 16, tendency.c_str());
     }
-
+    
     if (ItemCode == CoFranceTags::COPXN_POINT_REDUCED) {
         if (!FlightPlan.IsValid())
             return;
@@ -133,38 +157,58 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
                 
         }
         
-        strcpy_s(sItemString, 16, copx.c_str());
+        strcpy_s(sItemString, 16, copx.substr(0, 15).c_str());
     }
 
     if (ItemCode == CoFranceTags::COPXN_ALT_REDUCED || ItemCode == CoFranceTags::COPXN_ALT_FULL) {
         if (!FlightPlan.IsValid())
             return;
 
-        string copx = "";
+        string copx_alt = "";
 
         if (FlightPlan.GetTrackingControllerIsMe() && FlightPlan.GetExitCoordinationAltitude() > 0) {
-            copx = "x" + padWithZeros(2, FlightPlan.GetExitCoordinationAltitude() / 1000);
+            copx_alt = string("x") + padWithZeros(2, FlightPlan.GetExitCoordinationAltitude() / 1000);
             *pColorCode = GetCoordinationTagColour(FlightPlan.GetExitCoordinationAltitudeState());
         }
         else if (FlightPlan.GetEntryCoordinationAltitude() > 0) {
-            copx = "e" + padWithZeros(FlightPlan.GetEntryCoordinationAltitude() / 1000, 2);
+            copx_alt = string("e") + padWithZeros(2, FlightPlan.GetEntryCoordinationAltitude() / 1000);
             *pColorCode = GetCoordinationTagColour(FlightPlan.GetEntryCoordinationAltitudeState());
         }
 
-        if (ItemCode == CoFranceTags::COPXN_ALT_FULL && copx.length() == 0) {
+        if (ItemCode == CoFranceTags::COPXN_ALT_FULL && copx_alt.size() == 0) {
             if (FlightPlan.GetTrackingControllerIsMe())
-                copx = "x...";
+                copx_alt = "x...";
             else
-                copx = "e...";
+                copx_alt = "e...";
         }
 
 
-        strcpy_s(sItemString, 16, copx.c_str());
+        strcpy_s(sItemString, 16, copx_alt.substr(0, 15).c_str());
     }
 }
 
 void CoFrancePlugIn::OnTimer(int Counter)
 {
+}
+
+void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area)
+{
+    if (FunctionId == CoFranceTags::FUNCTION_CONFLICT_POPUP) {
+        SetASELAircraft(FlightPlanSelect(sItemString));
+        OpenPopupList(Area, "Conflict Group", 1);
+        AddPopupListElement(CoFranceCharacters::Moon.c_str(), "", CoFranceTags::FUNCTION_HANDLE_CONFLICT_GROUP);
+        AddPopupListElement(CoFranceCharacters::Star.c_str(), "", CoFranceTags::FUNCTION_HANDLE_CONFLICT_GROUP);
+        AddPopupListElement(CoFranceCharacters::Losange.c_str(), "", CoFranceTags::FUNCTION_HANDLE_CONFLICT_GROUP);
+        AddPopupListElement("Remove", "", CoFranceTags::FUNCTION_HANDLE_CONFLICT_GROUP, false, 2, false, true);
+    }
+
+    if (FunctionId == CoFranceTags::FUNCTION_HANDLE_CONFLICT_GROUP) {
+        if (ConflictGroups.find(FlightPlanSelectASEL().GetCallsign()) != ConflictGroups.end() && strcmp(sItemString, "Remove") == 0)
+            ConflictGroups.erase(FlightPlanSelectASEL().GetCallsign());
+        else if (strcmp(sItemString, "Remove") != 0)
+            ConflictGroups[FlightPlanSelectASEL().GetCallsign()] = sItemString;
+    }
+
 }
 
 void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
@@ -196,9 +240,11 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
         if (!fromWeb)
             CoFranceConfig = toml::parse(DllPath + "\\CoFrance.toml");
 
+        CanLoadRadarScreen = true;
         DisplayUserMessage("Message", "CoFrance PlugIn", "Config file loaded!", false, false, false, false, false);
     }
     catch (const std::exception& exc) {
+        CanLoadRadarScreen = false;
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading config file " + string(exc.what())).c_str(), false, false, false, false, false);
     }
 }

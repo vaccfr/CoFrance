@@ -26,9 +26,13 @@ public:
 
     void OnTimer(int Counter);
 
+    void OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area);
+
     toml::value CoFranceConfig;
     string DetailedAircraft;
     string DllPath;
+    map<string, string> ConflictGroups;
+    bool CanLoadRadarScreen = true;
 
     void LoadConfigFile(bool fromWeb = true);
 

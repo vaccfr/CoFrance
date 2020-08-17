@@ -17,6 +17,16 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 	g.SetPageUnit(UnitPixel);
 	g.SetSmoothingMode(SmoothingModeAntiAlias);
 
+	CDC dc;
+	dc.Attach(hDC);
+
+	POINT p;
+	if (GetCursorPos(&p)) {
+		if (ScreenToClient(GetActiveWindow(), &p)) {
+			MousePt = p;
+		}
+	}
+
 	try {
 
 		auto sector_ceiling_text_color = toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sector_vertical_limits");
@@ -75,6 +85,36 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 		// Drawing of AC Symbols and trails
 		if (Phase == EuroScopePlugIn::REFRESH_PHASE_BEFORE_TAGS) {
+			// Menubar
+
+			POINT StartOfMenu = { GetRadarArea().right - toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "menu", "menu_position"), GetRadarArea().top };
+			CRect r = this->DrawMenuBarButton(&dc, StartOfMenu, "CoFrance v"+string(MY_PLUGIN_VERSION), false);
+			StartOfMenu.x = r.right;
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "RAD", EnableTagDrawings);
+			AddScreenObject(BUTTON_RAD, "", r, false, "");
+			StartOfMenu.x = r.right;
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "FILTRES", EnableFilters);
+			AddScreenObject(BUTTON_FILTRES, "", r, false, "");
+			StartOfMenu.x = r.right;
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "I" + padWithZeros(3, Filter_Lower/100), false);
+			AddScreenObject(BUTTON_FILTRES_LOWER, "", r, false, "");
+			StartOfMenu.x = r.right;
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "S" + padWithZeros(3, Filter_Upper/100), false);
+			AddScreenObject(BUTTON_FILTRES_UPPER, "", r, false, "");
+			StartOfMenu.x = r.right;
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "VV", EnableVV);
+			AddScreenObject(BUTTON_VV, "", r, false, "");
+			StartOfMenu.x = r.right;
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, to_string(VV_Minutes) + "min", false);
+			AddScreenObject(BUTTON_VV_TIME, "", r, false, "");
+
+
+			// We stop here if no trag drawings
+			if (!EnableTagDrawings)
+				goto close_all;
+
+			// Ac Symvols
+
 			int SymbolSize = toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "ac_symbols", "size");
 
 			for (CRadarTarget radarTarget = GetPlugIn()->RadarTargetSelectFirst(); radarTarget.IsValid();
@@ -88,6 +128,11 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				// We skip targets slower than 50kts
 				if (radarTarget.GetPosition().GetReportedGS() < 50)
 					continue;
+
+				if (EnableFilters) {
+					if (radarTarget.GetPosition().GetFlightLevel() < Filter_Lower || radarTarget.GetPosition().GetFlightLevel() > Filter_Upper)
+						continue;
+				}
 
 				Color AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_not_concerned"));
 
@@ -104,15 +149,33 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 					if (CorrFp.GetState() == FLIGHT_PLAN_STATE_REDUNDANT)
 						AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_redundant"));
+
+					if (this->CoFrancepluginInstance->ConflictGroups.find(CorrFp.GetCallsign()) != this->CoFrancepluginInstance->ConflictGroups.end()) {
+						AcColor.SetFromCOLORREF(GetConflictGroupColor(this->CoFrancepluginInstance->CoFranceConfig, this->CoFrancepluginInstance->ConflictGroups[CorrFp.GetCallsign()]));
+					}
 				}
 
 				if (this->CoFrancepluginInstance->DetailedAircraft == string(radarTarget.GetCallsign())) {
 					AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_redundant"));
 				}
 
+				// If we are in a conflict group, we show a forced leader line of 2 minutes
+				// We also displayed speed vectors if turned on
+				if (this->CoFrancepluginInstance->ConflictGroups.find(CorrFp.GetCallsign()) != this->CoFrancepluginInstance->ConflictGroups.end() || EnableVV) {
+					
+					CPosition EndOfLine = Extrapolate(radarTarget.GetPosition().GetPosition(), radarTarget.GetTrackHeading(), radarTarget.GetPosition().GetReportedGS() * 0.0166667 * VV_Minutes);
+
+					POINT ptRad = ConvertCoordFromPositionToPixel(radarTarget.GetPosition().GetPosition());
+					Point pAcPosition(ptRad.x, ptRad.y);
+					POINT PtEndOfLine = ConvertCoordFromPositionToPixel(EndOfLine);
+					Point pEndOfLinePt(PtEndOfLine.x, PtEndOfLine.y);
+
+					g.DrawLine(&Pen(AcColor, 1.5f), pAcPosition, pEndOfLinePt);
+				}
+
 				// We can now draw the ac symbol
 				POINT TargetCenter = ConvertCoordFromPositionToPixel(radarTarget.GetPosition().GetPosition());
-				g.DrawEllipse(&Pen(AcColor), Rect(TargetCenter.x - SymbolSize, TargetCenter.y - SymbolSize, SymbolSize*2, SymbolSize * 2));
+				g.DrawEllipse(&Pen(AcColor), Rect(TargetCenter.x - SymbolSize, TargetCenter.y - SymbolSize, SymbolSize * 2, SymbolSize * 2));
 				
 				int TrailSize = SymbolSize;
 				int NumberOfTrails = toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "ac_symbols", "number_of_trails");
@@ -151,5 +214,61 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 		GetPlugIn()->DisplayUserMessage("Message", "CoFrance PlugIn", string("Error parsing file config file " + string(exc.what())).c_str(), false, false, false, false, false);
 	}
 
+close_all:
+
+	dc.Detach();
 	g.ReleaseHDC(hDC);
+}
+
+void RadarScreen::OnOverScreenObject(int ObjectType, const char* sObjectId, POINT Pt, RECT Area)
+{
+	MousePt = Pt;
+	RequestRefresh();
+}
+
+void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POINT Pt, RECT Area, int Button)
+{
+	MousePt = Pt;
+
+	if (ObjectType == BUTTON_FILTRES)
+		EnableFilters = !EnableFilters;
+
+	if (ObjectType == BUTTON_RAD)
+		EnableTagDrawings = !EnableTagDrawings;
+
+	if (ObjectType == BUTTON_VV)
+		EnableVV = !EnableVV;
+
+	if (ObjectType == BUTTON_VV_TIME) {
+		GetPlugIn()->OpenPopupList(Area, "Vecteur Vitesse", 1);
+		for (int i = 1; i <= 9; i++)
+			GetPlugIn()->AddPopupListElement(string(string(" ") + to_string(i) + string(" ")).c_str(), "", FUNCTION_SET_VV_TIME);
+	}
+
+	if (ObjectType == BUTTON_FILTRES_LOWER) {
+		GetPlugIn()->OpenPopupList(Area, "Filtres Inferieurs", 1);
+		FillInAltitudeList(GetPlugIn(), FUNCTION_SET_LOWER_FILTER, Filter_Lower);
+	}
+
+	if (ObjectType == BUTTON_FILTRES_UPPER) {
+		GetPlugIn()->OpenPopupList(Area, "Filtres Superieurs", 1);
+		FillInAltitudeList(GetPlugIn(), FUNCTION_SET_HIGHER_FILTER, Filter_Upper);
+	}
+
+	RequestRefresh();
+}
+
+void RadarScreen::OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area)
+{
+	if (FunctionId == FUNCTION_SET_VV_TIME) {
+		VV_Minutes = atoi(sItemString);
+	}
+
+	if (FunctionId == FUNCTION_SET_LOWER_FILTER) {
+		Filter_Lower = atoi(sItemString) * 100;
+	}
+
+	if (FunctionId == FUNCTION_SET_HIGHER_FILTER) {
+		Filter_Upper = atoi(sItemString) * 100;
+	}
 }

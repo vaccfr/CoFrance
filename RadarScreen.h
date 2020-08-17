@@ -20,6 +20,26 @@ public:
 	~RadarScreen();
 
 	CoFrancePlugIn* CoFrancepluginInstance;
+	int Filter_Upper = 99999;
+	int Filter_Lower = 0;
+	bool EnableTagDrawings = true;
+	bool EnableFilters = false;
+
+	bool EnableVV = false;
+	int VV_Minutes = 2;
+
+	int BUTTON_FILTRES = 950;
+	int BUTTON_FILTRES_LOWER = 951;
+	int BUTTON_FILTRES_UPPER = 952;
+	int BUTTON_RAD = 953;
+	int BUTTON_VV = 954;
+	int BUTTON_VV_TIME = 955;
+
+	int FUNCTION_SET_VV_TIME = 785;
+	int FUNCTION_SET_LOWER_FILTER = 787;
+	int FUNCTION_SET_HIGHER_FILTER = 788;
+
+	POINT MousePt;
 
 	//---OnRefresh------------------------------------------------------
 
@@ -29,28 +49,6 @@ public:
 	{
 		delete this;
 	};
-
-	double PI = (double)M_PI;
-	double DegToRad(const double degree) { return (degree * PI / 180); };
-	double RadToDeg(const double radian) { return (radian * 180 / PI); };
-
-	CPosition Extrapolate(CPosition init, double angle, double nm)
-	{
-		CPosition newPos;
-
-		double d = nm / 60 * PI / 180;
-		double trk = DegToRad(angle);
-		double lat0 = DegToRad(init.m_Latitude);
-		double lon0 = DegToRad(init.m_Longitude);
-
-		double lat = asin(sin(lat0) * cos(d) + cos(lat0) * sin(d) * cos(trk));
-		double lon = cos(lat) == 0 ? lon0 : fmod(lon0 + asin(sin(trk) * sin(d) / cos(lat)) + PI, 2 * PI) - PI;
-
-		newPos.m_Latitude = RadToDeg(lat);
-		newPos.m_Longitude = RadToDeg(lon);
-
-		return newPos;
-	}
 
 	void DrawFixedSizedText(Graphics* g, CPosition TextPosition, int Size, string text, Color c) {
 		
@@ -74,6 +72,57 @@ public:
 		g->DrawString(wstring(text.begin(), text.end()).c_str(), wcslen(wstring(text.begin(), text.end()).c_str()), LevelFontF, PointF(Gdiplus::REAL(pt.x), Gdiplus::REAL(pt.y)), &SolidBrush(c));
 
 	}
+
+	void OnOverScreenObject(int ObjectType, const char* sObjectId, POINT Pt, RECT Area);
+
+	void OnClickScreenObject(int ObjectType, const char* sObjectId, POINT Pt, RECT Area, int Button);
+
+	void OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area);
+
+	CRect DrawMenuBarButton(CDC* dc, POINT TopLeft, string Text, bool Pressed) {
+		COLORREF DarkBlueMenu = StaticColours::DarkBlueMenu.ToCOLORREF();
+		COLORREF LightBlueMenu = StaticColours::LightBlueMenu.ToCOLORREF();
+		CBrush ButtonBackground(DarkBlueMenu);
+		CBrush ButtonPressedBackground(LightBlueMenu);
+		CPen YellowPen(PS_SOLID, 1, StaticColours::YellowHighlight.ToCOLORREF());
+
+		// We need to calculate the size of the button according to the text fitting
+		CSize TextSize = dc->GetTextExtent(Text.c_str());
+
+		int Width = TextSize.cx + ButtonPaddingSides * 2;
+		int Height = TextSize.cy + ButtonPaddingTop * 2;
+
+		CRect Button(TopLeft.x, TopLeft.y, TopLeft.x + Width, TopLeft.y + Height);
+
+		if (!Pressed)
+			dc->FillSolidRect(Button, DarkBlueMenu);
+		else
+			dc->FillSolidRect(Button, LightBlueMenu);
+
+		dc->Draw3dRect(TopLeft.x, TopLeft.y, Width, Height, StaticColours::MenuButtonTop.ToCOLORREF(), StaticColours::MenuButtonBottom.ToCOLORREF());
+
+		if (IsInRect(MousePt, Button)) {
+			dc->SelectStockObject(NULL_BRUSH);
+			dc->SelectObject(&YellowPen);
+			dc->Rectangle(Button);
+		}
+
+		// Text Draw
+		if (!Pressed)
+			dc->SetTextColor(StaticColours::GreyTextMenu.ToCOLORREF());
+		else
+			dc->SetTextColor(StaticColours::DarkBlueMenu.ToCOLORREF());
+
+		dc->TextOutA(TopLeft.x + ButtonPaddingSides, TopLeft.y + ButtonPaddingTop, Text.c_str());
+
+		return Button;
+	};
+
+	void FillInAltitudeList(CPlugIn* Plugin, int FunctionId, int Current) {
+		Plugin->AddPopupListElement(" 999 ", "", FunctionId, Current == 99999);
+		for (int i = 410; i >= 0; i -= 10)
+			Plugin->AddPopupListElement(string(string(" ") + to_string(i) + string(" ")).c_str(), "", FunctionId, Current / 100 == i);
+	};
 
 	void Log(string s)
 	{

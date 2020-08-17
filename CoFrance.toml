@@ -1,13 +1,20 @@
 [colours]
-sector_vertical_limits = [75, 41, 41, 41]
+sector_vertical_limits = [100, 41, 41, 41]
 ac_not_concerned = [142, 142, 142]
 ac_notified = [84, 179, 108]
-ac_assumed = [109, 109, 109]
+ac_assumed = [209, 209, 209]
 ac_transferred = [169, 202, 119]
-ac_redundant = [0, 187, 187]
+ac_redundant = [114, 216, 250]
+conflict_group_moon = [75, 221, 75]
+conflict_group_losange = [255, 174, 23]
+conflict_group_star = [255, 255, 127]
 
 [ac_symbols]
 size = 5
+number_of_trails=8
+
+[menu]
+menu_position = 329
 
 [[sector_vertical_limit]]
 text = "295\r\n000"
