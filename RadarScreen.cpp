@@ -218,9 +218,10 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 					g.DrawLine(&Pen(AcColor), LeftSide, RightSide);
 
+
 					compareToPos = previousPos.GetPosition();
 					if (ApproachMode)
-						previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPosition());
+						previousPos = radarTarget.GetPreviousPosition(previousPos);
 					else
 						previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPreviousPosition(previousPos));
 				}
