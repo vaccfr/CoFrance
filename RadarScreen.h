@@ -28,12 +28,15 @@ public:
 	bool EnableVV = false;
 	int VV_Minutes = 2;
 
+	bool ApproachMode = false;
+
 	int BUTTON_FILTRES = 950;
 	int BUTTON_FILTRES_LOWER = 951;
 	int BUTTON_FILTRES_UPPER = 952;
 	int BUTTON_RAD = 953;
 	int BUTTON_VV = 954;
 	int BUTTON_VV_TIME = 955;
+	int BUTTON_APPROACH = 956;
 
 	int FUNCTION_SET_VV_TIME = 785;
 	int FUNCTION_SET_LOWER_FILTER = 787;

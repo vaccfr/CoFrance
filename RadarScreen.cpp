@@ -83,12 +83,9 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 		}
 
-		// Drawing of AC Symbols and trails
-		if (Phase == EuroScopePlugIn::REFRESH_PHASE_BEFORE_TAGS) {
-			// Menubar
-
+		if (Phase == EuroScopePlugIn::REFRESH_PHASE_AFTER_TAGS) {
 			POINT StartOfMenu = { GetRadarArea().right - toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "menu", "menu_position"), GetRadarArea().top };
-			CRect r = this->DrawMenuBarButton(&dc, StartOfMenu, "CoFrance v"+string(MY_PLUGIN_VERSION), false);
+			CRect r = this->DrawMenuBarButton(&dc, StartOfMenu, "CoFrance v" + string(MY_PLUGIN_VERSION), false);
 			StartOfMenu.x = r.right;
 			r = this->DrawMenuBarButton(&dc, StartOfMenu, "RAD", EnableTagDrawings);
 			AddScreenObject(BUTTON_RAD, "", r, false, "");
@@ -96,10 +93,10 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			r = this->DrawMenuBarButton(&dc, StartOfMenu, "FILTRES", EnableFilters);
 			AddScreenObject(BUTTON_FILTRES, "", r, false, "");
 			StartOfMenu.x = r.right;
-			r = this->DrawMenuBarButton(&dc, StartOfMenu, "I" + padWithZeros(3, Filter_Lower/100), false);
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "I" + padWithZeros(3, Filter_Lower / 100), false);
 			AddScreenObject(BUTTON_FILTRES_LOWER, "", r, false, "");
 			StartOfMenu.x = r.right;
-			r = this->DrawMenuBarButton(&dc, StartOfMenu, "S" + padWithZeros(3, Filter_Upper/100), false);
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "S" + padWithZeros(3, Filter_Upper / 100), false);
 			AddScreenObject(BUTTON_FILTRES_UPPER, "", r, false, "");
 			StartOfMenu.x = r.right;
 			r = this->DrawMenuBarButton(&dc, StartOfMenu, "VV", EnableVV);
@@ -107,7 +104,14 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			StartOfMenu.x = r.right;
 			r = this->DrawMenuBarButton(&dc, StartOfMenu, to_string(VV_Minutes) + "min", false);
 			AddScreenObject(BUTTON_VV_TIME, "", r, false, "");
+			StartOfMenu.x = r.right;
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "APP", ApproachMode);
+			AddScreenObject(BUTTON_APPROACH, "", r, false, "");
+		}
 
+		// Drawing of AC Symbols and trails
+		if (Phase == EuroScopePlugIn::REFRESH_PHASE_BEFORE_TAGS) {
+			// Menubar
 
 			// We stop here if no trag drawings
 			if (!EnableTagDrawings)
@@ -120,16 +124,20 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			for (CRadarTarget radarTarget = GetPlugIn()->RadarTargetSelectFirst(); radarTarget.IsValid();
 				radarTarget = GetPlugIn()->RadarTargetSelectNext(radarTarget))
 			{
-				
+
 				// We skip invalid targets
 				if (!radarTarget.IsValid() || (!radarTarget.GetPosition().GetTransponderC() && !radarTarget.GetPosition().GetTransponderI()))
 					continue;
 
-				// We skip targets slower than 50kts
-				if (radarTarget.GetPosition().GetReportedGS() < 50)
+
+				// If we have an aircaft assumed, we force it through the filters
+				bool owned_by_me = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe();
+
+				// We skip targets slower than 40kts
+				if (radarTarget.GetPosition().GetReportedGS() < 40)
 					continue;
 
-				if (EnableFilters) {
+				if (EnableFilters && !owned_by_me) {
 					if (radarTarget.GetPosition().GetFlightLevel() < Filter_Lower || radarTarget.GetPosition().GetFlightLevel() > Filter_Upper)
 						continue;
 				}
@@ -179,7 +187,14 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				
 				int TrailSize = SymbolSize;
 				int NumberOfTrails = toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "ac_symbols", "number_of_trails");
-				CRadarTargetPositionData previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPreviousPosition(radarTarget.GetPosition()));
+
+				CRadarTargetPositionData previousPos;
+				// if Approach Mode we cut it in half
+				if (ApproachMode)
+					previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPosition());
+				else
+					previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPreviousPosition(radarTarget.GetPosition()));
+
 				CPosition compareToPos = radarTarget.GetPosition().GetPosition();
 				for (int j = 0; j < NumberOfTrails; j++) {
 					POINT pCoordNative = ConvertCoordFromPositionToPixel(previousPos.GetPosition());
@@ -204,7 +219,10 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					g.DrawLine(&Pen(AcColor), LeftSide, RightSide);
 
 					compareToPos = previousPos.GetPosition();
-					previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPreviousPosition(previousPos));
+					if (ApproachMode)
+						previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPosition());
+					else
+						previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPreviousPosition(previousPos));
 				}
 			}
 		}
@@ -238,6 +256,9 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 
 	if (ObjectType == BUTTON_VV)
 		EnableVV = !EnableVV;
+
+	if (ObjectType == BUTTON_APPROACH)
+		ApproachMode = !ApproachMode;
 
 	if (ObjectType == BUTTON_VV_TIME) {
 		GetPlugIn()->OpenPopupList(Area, "Vecteur Vitesse", 1);
