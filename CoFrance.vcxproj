@@ -218,6 +218,9 @@
   <ItemGroup>
     <Text Include="conanfile.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\..\..\Documents\EuroScope\vCTR_Text.ttf" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

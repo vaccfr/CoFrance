@@ -71,4 +71,9 @@
   <ItemGroup>
     <Text Include="conanfile.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\..\..\Documents\EuroScope\vCTR_Text.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
+  </ItemGroup>
 </Project>

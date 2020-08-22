@@ -59,8 +59,11 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				auto neededControllers = toml::find<vector<string>>(v, "controller_others");
 				for (const auto& c : neededControllers)
 				{
-					if (find(AllControllers.begin(), AllControllers.end(), c) != AllControllers.end())
-						DrawText = true; break;
+					if (find(AllControllers.begin(), AllControllers.end(), c) != AllControllers.end()) {
+						DrawText = true; 
+						break;
+					}
+						
 				}
 
 				// Check if any of the controllers which hide the text are online
@@ -68,8 +71,11 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					auto notNeededControllers = toml::find<vector<string>>(v, "controller_not_others");
 					for (const auto& c : notNeededControllers)
 					{
-						if (find(AllControllers.begin(), AllControllers.end(), c) != AllControllers.end())
-							DrawText = false; break;
+						if (find(AllControllers.begin(), AllControllers.end(), c) != AllControllers.end()) {
+							DrawText = false; 
+							break;
+						}
+							
 					}
 				}
 
