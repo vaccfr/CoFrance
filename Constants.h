@@ -165,3 +165,66 @@ static COLORREF GetConflictGroupColor(toml::value Config, string ConflictGroup) 
         return vectorToGdiplusColour(toml::find<std::vector<int>>(Config, "colours", "conflict_group_losange")).ToCOLORREF();
     return COLORREF();
 }
+
+inline static std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim))
+        elems.push_back(item);
+    return elems;
+};
+inline static std::vector<std::string> split(const std::string& s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+};
+
+// Liang-Barsky function by Daniel White @ http://www.skytopia.com/project/articles/compsci/clipping.html
+// This function inputs 8 numbers, and outputs 4 new numbers (plus a boolean value to say whether the clipped line is drawn at all).
+//
+inline static bool LiangBarsky(RECT Area, POINT fromSrc, POINT toSrc, POINT& ClipFrom, POINT& ClipTo)         // The output values, so declare these outside.
+{
+
+    double edgeLeft, edgeRight, edgeBottom, edgeTop, x0src, y0src, x1src, y1src;
+
+    edgeLeft = Area.left;
+    edgeRight = Area.right;
+    edgeBottom = Area.top;
+    edgeTop = Area.bottom;
+
+    x0src = fromSrc.x;
+    y0src = fromSrc.y;
+    x1src = toSrc.x;
+    y1src = toSrc.y;
+
+    double t0 = 0.0;    double t1 = 1.0;
+    double xdelta = x1src - x0src;
+    double ydelta = y1src - y0src;
+
+    double p = 0, q = 0, r;
+
+    for (int edge = 0; edge < 4; edge++) {   // Traverse through left, right, bottom, top edges.
+        if (edge == 0) { p = -xdelta;    q = -(edgeLeft - x0src); }
+        if (edge == 1) { p = xdelta;     q = (edgeRight - x0src); }
+        if (edge == 2) { p = -ydelta;    q = -(edgeBottom - y0src); }
+        if (edge == 3) { p = ydelta;     q = (edgeTop - y0src); }
+        r = q / p;
+        if (p == 0 && q < 0) return false;   // Don't draw line at all. (parallel line outside)
+
+        if (p < 0) {
+            if (r > t1) return false;         // Don't draw line at all.
+            else if (r > t0) t0 = r;            // Line is clipped!
+        }
+        else if (p > 0) {
+            if (r < t0) return false;      // Don't draw line at all.
+            else if (r < t1) t1 = r;         // Line is clipped!
+        }
+    }
+
+    ClipFrom.x = long(x0src + t0 * xdelta);
+    ClipFrom.y = long(y0src + t0 * ydelta);
+    ClipTo.x = long(x0src + t1 * xdelta);
+    ClipTo.y = long(y0src + t1 * ydelta);
+
+    return true;        // (clipped) line is drawn
+};

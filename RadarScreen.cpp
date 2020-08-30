@@ -134,6 +134,9 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			REAL dashVals[2] = { 4.0f, 4.0f };
 			SepToolDashPen.SetDashPattern(dashVals, 2);
 
+			Color SepToolBackground = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_background"));
+			Pen SepToolBorder(vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_border")));
+
 			int saveDcActiveSepTool = dc.SaveDC();
 			dc.SetTextColor(SepToolColour.ToCOLORREF());
 
@@ -145,6 +148,15 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				
 				POINT AcPosPix = ConvertCoordFromPositionToPixel(rt.GetPosition().GetPosition());
 				g.DrawLine(&SepToolDashPen, Point(AcPosPix.x, AcPosPix.y), Point(MousePt.x, MousePt.y));
+
+				// Angled Pointer Around the mouse
+				Rect MousePointer(Point(MousePt.x-20, MousePt.y-20), Size(40, 40));
+				Rect MousePointerCenter(Point(MousePt.x-3, MousePt.y-3), Size(6, 6));
+				
+				g.DrawLine(&SepToolBorder, Point(MousePointerCenter.GetLeft(), MousePointerCenter.GetTop()), Point(MousePointer.GetLeft(), MousePointer.GetTop()));
+				g.DrawLine(&SepToolBorder, Point(MousePointerCenter.GetLeft(), MousePointerCenter.GetBottom()), Point(MousePointer.GetLeft(), MousePointer.GetBottom()));
+				g.DrawLine(&SepToolBorder, Point(MousePointerCenter.GetRight(), MousePointerCenter.GetTop()), Point(MousePointer.GetRight(), MousePointer.GetTop()));
+				g.DrawLine(&SepToolBorder, Point(MousePointerCenter.GetRight(), MousePointerCenter.GetBottom()), Point(MousePointer.GetRight(), MousePointer.GetBottom()));
 
 				RequestRefresh();
 			}
@@ -191,62 +203,63 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 					TextPositon.x -= Measure.cx / 2;
 
-					dc.TextOutA(TextPositon.x, TextPositon.y, distanceText.c_str());
-
-					g.DrawLine(&SepToolPen, Point(MidPointDistance.x, MidPointDistance.y), Point(TextPositon.x+Measure.cx/2, TextPositon.y+Measure.cy));
-
-					//CRect AreaRemoveTool = { TextPositon.x, TextPositon.y, TextPositon.x + Measure.cx, TextPositon.y + Measure.cy };
+					CRect AreaRemoveTool = { TextPositon.x, TextPositon.y, TextPositon.x + Measure.cx, TextPositon.y + Measure.cy };
 					
 					VERA::VERADataStruct vera = VERA::Calculate(FirstTarget, SecondTarget, toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "sep", "lookup_time"));
 
+					string veraDistanceText = "";
 					if (vera.minDistanceNm != -1) {
-						//CPosition velocity = Extrapolate(vera.predictedFirstPos, FirstTarget.GetTrackHeading(),
-						//	FirstTarget.GetPosition().GetReportedGS() * 0.514444 * MenuBar::GetVelValueButtonPressed(ButtonsPressed));
-						//DrawHourGlassWithLeader(&dc, ConvertCoordFromPositionToPixel(vera.predictedFirstPos), ConvertCoordFromPositionToPixel(velocity));
+						veraDistanceText = to_string(vera.minDistanceNm);
+						decimal_pos = veraDistanceText.find(".");
+						veraDistanceText = veraDistanceText.substr(0, decimal_pos + 2) + "Nm";
 
-						//velocity = Extrapolate(vera.predictedSecondPos, SecondTarget.GetTrackHeading(),
-						//	SecondTarget.GetPosition().GetReportedGS() * 0.514444 * MenuBar::GetVelValueButtonPressed(ButtonsPressed));
-						//DrawHourGlassWithLeader(&dc, ConvertCoordFromPositionToPixel(vera.predictedSecondPos), ConvertCoordFromPositionToPixel(velocity));
-
-						Point FirstPosPredictedPt(ConvertCoordFromPositionToPixel(vera.predictedFirstPos).x, ConvertCoordFromPositionToPixel(vera.predictedFirstPos).y);
-						g.DrawLine(&SepToolPen, Point(FirstPos.x, FirstPos.y), FirstPosPredictedPt);
-						g.FillEllipse(&SolidBrush(SepToolColour), Rect(FirstPosPredictedPt.X - SymbolSize, FirstPosPredictedPt.Y - SymbolSize, SymbolSize * 2, SymbolSize * 2));
-						Point SecondPosPredictedPt(ConvertCoordFromPositionToPixel(vera.predictedSecondPos).x, ConvertCoordFromPositionToPixel(vera.predictedSecondPos).y);
-						g.DrawLine(&SepToolPen, Point(SecondPos.x, SecondPos.y), SecondPosPredictedPt);
-						g.FillEllipse(&SolidBrush(SepToolColour), Rect(SecondPosPredictedPt.X - SymbolSize, SecondPosPredictedPt.Y - SymbolSize, SymbolSize * 2, SymbolSize * 2));
-
-						distanceText = to_string(vera.minDistanceNm);
-						decimal_pos = distanceText.find(".");
-						distanceText = distanceText.substr(0, decimal_pos + 2) + "Nm";
-
-						distanceText = distanceText+ " " + to_string((int)vera.minDistanceSeconds / 60) + "'" +
+						veraDistanceText = veraDistanceText + " " + to_string((int)vera.minDistanceSeconds / 60) + "'" +
 							to_string((int)vera.minDistanceSeconds % 60) + '"';
 
-						if (vera.minDistanceNm < toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "sep", "warning_threshold")) {
-							dc.SetTextColor(vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_warning")).ToCOLORREF());
-						}
-						else {
-							dc.SetTextColor(SepToolColour.ToCOLORREF());
-						}
+						Measure = dc.GetTextExtent(veraDistanceText.c_str());
 
-						dc.TextOutA(TextPositon.x, TextPositon.y + Measure.cy, distanceText.c_str());
+						AreaRemoveTool.right = max(AreaRemoveTool.right, TextPositon.x + Measure.cx);
+						AreaRemoveTool.bottom = TextPositon.y + Measure.cy * 2;
+						AreaRemoveTool.InflateRect(4, 4);
+
+						if (IsInRect(MousePt, AreaRemoveTool)) {
+							Point FirstPosPredictedPt(ConvertCoordFromPositionToPixel(vera.predictedFirstPos).x, ConvertCoordFromPositionToPixel(vera.predictedFirstPos).y);
+							g.DrawLine(&SepToolPen, Point(FirstPos.x, FirstPos.y), FirstPosPredictedPt);
+							g.FillEllipse(&SolidBrush(SepToolColour), Rect(FirstPosPredictedPt.X - SymbolSize, FirstPosPredictedPt.Y - SymbolSize, SymbolSize * 2, SymbolSize * 2));
+							Point SecondPosPredictedPt(ConvertCoordFromPositionToPixel(vera.predictedSecondPos).x, ConvertCoordFromPositionToPixel(vera.predictedSecondPos).y);
+							g.DrawLine(&SepToolPen, Point(SecondPos.x, SecondPos.y), SecondPosPredictedPt);
+							g.FillEllipse(&SolidBrush(SepToolColour), Rect(SecondPosPredictedPt.X - SymbolSize, SecondPosPredictedPt.Y - SymbolSize, SymbolSize * 2, SymbolSize * 2));
+						}
 					}
-
-					/*AreaRemoveTool.right = max(AreaRemoveTool.right, TextPositon.x + Measure.cx);
-					AreaRemoveTool.bottom = TextPositon.y + Measure.cy * 2;
+					else {
+						AreaRemoveTool.InflateRect(4, 4);
+					}
+					
 
 					POINT ClipFrom, ClipTo;
-					if (LiangBarsky(AreaRemoveTool, MidPointDistance, AreaRemoveTool.CenterPoint(), ClipFrom, ClipTo)) {
-						CPen DashedPen(PS_DOT, 1, Colours::OrangeTool.ToCOLORREF());
-						dc.SelectObject(&DashedPen);
+					if (LiangBarsky(AreaRemoveTool, MidPointDistance, AreaRemoveTool.CenterPoint(), ClipFrom, ClipTo))
+						g.DrawLine(&SepToolPen, Point(MidPointDistance.x, MidPointDistance.y), Point(ClipFrom.x, ClipFrom.y));
 
-						dc.MoveTo(MidPointDistance);
-						dc.LineTo(ClipFrom);
-
-						dc.SelectObject(&SepToolColorPen);
+					if (IsInRect(MousePt, AreaRemoveTool)) {
+						Rect ConcernedRect = Rect(AreaRemoveTool.left, AreaRemoveTool.top, AreaRemoveTool.Width(), AreaRemoveTool.Height());
+						g.FillRectangle(&SolidBrush(SepToolBackground), ConcernedRect);
+						if (vera.minDistanceNm != -1)
+							g.DrawLine(&SepToolBorder, Point(AreaRemoveTool.left, AreaRemoveTool.top-1 + AreaRemoveTool.Height() /2), Point(AreaRemoveTool.right, AreaRemoveTool.top-1 + AreaRemoveTool.Height() / 2));
+						g.DrawRectangle(&SepToolBorder, ConcernedRect);
 					}
 
-					AddScreenObject(SCREEN_SEP_TOOL, string(kv.first + "," + kv.second).c_str(), AreaRemoveTool, false, "");*/
+					dc.TextOutA(TextPositon.x, TextPositon.y, distanceText.c_str());
+
+					if (vera.minDistanceNm < toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "sep", "warning_threshold") && vera.minDistanceNm != -1) {
+						dc.SetTextColor(vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_warning")).ToCOLORREF());
+					}
+					else {
+						dc.SetTextColor(SepToolColour.ToCOLORREF());
+					}
+
+					dc.TextOutA(TextPositon.x, TextPositon.y + Measure.cy, veraDistanceText.c_str());
+
+					AddScreenObject(SCREEN_SEP_TOOL, string(kv.first + "," + kv.second).c_str(), AreaRemoveTool, false, "");
 				}
 			}
 
@@ -429,6 +442,22 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 			FirstSepToolCallsign = sObjectId;
 		}
 			
+	}
+
+	if (ObjectType == SCREEN_SEP_TOOL) {
+		vector<string> s = split(sObjectId, ',');
+		pair<string, string> toRemove = pair<string, string>(s.front(), s.back());
+
+		typedef multimap<string, string>::iterator iterator;
+		std::pair<iterator, iterator> iterpair = ActiveSepTools.equal_range(toRemove.first);
+
+		iterator it = iterpair.first;
+		for (; it != iterpair.second; ++it) {
+			if (it->second == toRemove.second) {
+				it = ActiveSepTools.erase(it);
+				break;
+			}
+		}
 	}
 
 	RequestRefresh();

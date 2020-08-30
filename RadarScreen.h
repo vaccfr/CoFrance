@@ -37,6 +37,8 @@ public:
 
 	int AC_SYMBOL = 800;
 
+	int SCREEN_SEP_TOOL = 805;
+
 	int BUTTON_FILTRES = 950;
 	int BUTTON_FILTRES_LOWER = 951;
 	int BUTTON_FILTRES_UPPER = 952;
@@ -141,5 +143,6 @@ public:
 		file << s << endl;
 		file.close();
 	}
+
 };
 
