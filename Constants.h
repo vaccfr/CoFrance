@@ -10,7 +10,7 @@
 #define MY_PLUGIN_DEVELOPER "Pierre Ferran"
 #define MY_PLUGIN_COPYRIGHT "MIT License"
 
-#define CONFIG_ONLINE_URL_BASE "https://new.vatfrance.org"
+#define CONFIG_ONLINE_URL_BASE "https://vatfrance.org"
 #define CONFIG_ONLINE_URL_PATH "/api/cfr/config"
 
 using namespace std;
@@ -31,6 +31,7 @@ namespace CoFranceTags {
 
     const int FUNCTION_CONFLICT_POPUP = 500;
     const int FUNCTION_HANDLE_CONFLICT_GROUP = 501;
+    const int FUNCTION_SEP_TOOL = 502;
 }
 
 namespace CoFranceCharacters {

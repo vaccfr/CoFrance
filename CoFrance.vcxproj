@@ -211,6 +211,7 @@
     <ClInclude Include="RadarScreen.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="VERA.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CoFrance.rc" />

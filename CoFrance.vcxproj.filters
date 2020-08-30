@@ -62,6 +62,9 @@
     <ClInclude Include="RadarScreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VERA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CoFrance.rc">

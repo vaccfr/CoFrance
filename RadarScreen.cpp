@@ -11,7 +11,7 @@ RadarScreen::~RadarScreen()
 	
 }
 
-void RadarScreen::OnRefresh(HDC hDC, int Phase)
+void RadarScreen::OnRefresh(HDC hDC, int Phase) 
 {
 	Graphics g(hDC);
 	g.SetPageUnit(UnitPixel);
@@ -113,6 +113,10 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			StartOfMenu.x = r.right;
 			r = this->DrawMenuBarButton(&dc, StartOfMenu, "APP", ApproachMode);
 			AddScreenObject(BUTTON_APPROACH, "", r, false, "");
+
+			for (auto kv : ToAddAcSymbolScreenObject) {
+				AddScreenObject(AC_SYMBOL, kv.first.c_str(), kv.second, false, "");
+			}
 		}
 
 		// Drawing of AC Symbols and trails
@@ -123,9 +127,136 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			if (!EnableTagDrawings)
 				goto close_all;
 
-			// Ac Symvols
+
+			Color SepToolColour = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_tool"));
+			Pen SepToolDashPen(SepToolColour);
+			Pen SepToolPen(SepToolColour);
+			REAL dashVals[2] = { 4.0f, 4.0f };
+			SepToolDashPen.SetDashPattern(dashVals, 2);
+
+			int saveDcActiveSepTool = dc.SaveDC();
+			dc.SetTextColor(SepToolColour.ToCOLORREF());
 
 			int SymbolSize = toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "ac_symbols", "size");
+
+			// Sep tool drawing
+			if (FirstSepToolCallsign.size() > 0) {
+				CRadarTarget rt = GetPlugIn()->RadarTargetSelect(FirstSepToolCallsign.c_str());
+				
+				POINT AcPosPix = ConvertCoordFromPositionToPixel(rt.GetPosition().GetPosition());
+				g.DrawLine(&SepToolDashPen, Point(AcPosPix.x, AcPosPix.y), Point(MousePt.x, MousePt.y));
+
+				RequestRefresh();
+			}
+
+
+			for (auto kv : ActiveSepTools) {
+				CRadarTarget FirstTarget = GetPlugIn()->RadarTargetSelect(kv.first.c_str());
+				CRadarTarget SecondTarget = GetPlugIn()->RadarTargetSelect(kv.second.c_str());
+
+				if (FirstTarget.IsValid() && SecondTarget.IsValid()) {
+					CPosition FirstTargetPos = FirstTarget.GetPosition().GetPosition();
+					CPosition SecondTargetPos = SecondTarget.GetPosition().GetPosition();
+
+					POINT FirstPos = ConvertCoordFromPositionToPixel(FirstTargetPos);
+					POINT SecondPos = ConvertCoordFromPositionToPixel(SecondTargetPos);
+
+					g.DrawLine(&SepToolDashPen, Point(FirstPos.x, FirstPos.y), Point(SecondPos.x, SecondPos.y));
+
+					// First the distance tool
+
+					string headingText = padWithZeros(3, (int)FirstTargetPos.DirectionTo(SecondTargetPos));
+
+					string distanceText = to_string(FirstTargetPos.DistanceTo(SecondTargetPos));
+					size_t decimal_pos = distanceText.find(".");
+					distanceText = distanceText.substr(0, decimal_pos + 2)+"Nm";
+
+					distanceText = distanceText + " " + headingText + "°";
+
+					POINT MidPointDistance = { (int)((FirstPos.x + SecondPos.x) / 2), (int)((FirstPos.y + SecondPos.y) / 2) };
+
+					CSize Measure = dc.GetTextExtent(distanceText.c_str());
+
+					// We have to calculate the text angle 
+					double AdjustedLineHeading = fmod(FirstTargetPos.DirectionTo(SecondTargetPos) - 90.0, 360.0);
+					double NewAngle = fmod(AdjustedLineHeading + 90, 360);
+
+					if (FirstTargetPos.DirectionTo(SecondTargetPos) > 180.0) {
+						NewAngle = fmod(AdjustedLineHeading - 90, 360);
+					}
+
+					POINT TextPositon;
+					TextPositon.x = long(MidPointDistance.x + float((20 + Measure.cx) * cos(DegToRad(NewAngle))));
+					TextPositon.y = long(MidPointDistance.y + float((20) * sin(DegToRad(NewAngle))));
+
+					TextPositon.x -= Measure.cx / 2;
+
+					dc.TextOutA(TextPositon.x, TextPositon.y, distanceText.c_str());
+
+					g.DrawLine(&SepToolPen, Point(MidPointDistance.x, MidPointDistance.y), Point(TextPositon.x+Measure.cx/2, TextPositon.y+Measure.cy));
+
+					//CRect AreaRemoveTool = { TextPositon.x, TextPositon.y, TextPositon.x + Measure.cx, TextPositon.y + Measure.cy };
+					
+					VERA::VERADataStruct vera = VERA::Calculate(FirstTarget, SecondTarget, toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "sep", "lookup_time"));
+
+					if (vera.minDistanceNm != -1) {
+						//CPosition velocity = Extrapolate(vera.predictedFirstPos, FirstTarget.GetTrackHeading(),
+						//	FirstTarget.GetPosition().GetReportedGS() * 0.514444 * MenuBar::GetVelValueButtonPressed(ButtonsPressed));
+						//DrawHourGlassWithLeader(&dc, ConvertCoordFromPositionToPixel(vera.predictedFirstPos), ConvertCoordFromPositionToPixel(velocity));
+
+						//velocity = Extrapolate(vera.predictedSecondPos, SecondTarget.GetTrackHeading(),
+						//	SecondTarget.GetPosition().GetReportedGS() * 0.514444 * MenuBar::GetVelValueButtonPressed(ButtonsPressed));
+						//DrawHourGlassWithLeader(&dc, ConvertCoordFromPositionToPixel(vera.predictedSecondPos), ConvertCoordFromPositionToPixel(velocity));
+
+						Point FirstPosPredictedPt(ConvertCoordFromPositionToPixel(vera.predictedFirstPos).x, ConvertCoordFromPositionToPixel(vera.predictedFirstPos).y);
+						g.DrawLine(&SepToolPen, Point(FirstPos.x, FirstPos.y), FirstPosPredictedPt);
+						g.FillEllipse(&SolidBrush(SepToolColour), Rect(FirstPosPredictedPt.X - SymbolSize, FirstPosPredictedPt.Y - SymbolSize, SymbolSize * 2, SymbolSize * 2));
+						Point SecondPosPredictedPt(ConvertCoordFromPositionToPixel(vera.predictedSecondPos).x, ConvertCoordFromPositionToPixel(vera.predictedSecondPos).y);
+						g.DrawLine(&SepToolPen, Point(SecondPos.x, SecondPos.y), SecondPosPredictedPt);
+						g.FillEllipse(&SolidBrush(SepToolColour), Rect(SecondPosPredictedPt.X - SymbolSize, SecondPosPredictedPt.Y - SymbolSize, SymbolSize * 2, SymbolSize * 2));
+
+						distanceText = to_string(vera.minDistanceNm);
+						decimal_pos = distanceText.find(".");
+						distanceText = distanceText.substr(0, decimal_pos + 2) + "Nm";
+
+						distanceText = distanceText+ " " + to_string((int)vera.minDistanceSeconds / 60) + "'" +
+							to_string((int)vera.minDistanceSeconds % 60) + '"';
+
+						if (vera.minDistanceNm < toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "sep", "warning_threshold")) {
+							dc.SetTextColor(vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_warning")).ToCOLORREF());
+						}
+						else {
+							dc.SetTextColor(SepToolColour.ToCOLORREF());
+						}
+
+						dc.TextOutA(TextPositon.x, TextPositon.y + Measure.cy, distanceText.c_str());
+					}
+
+					/*AreaRemoveTool.right = max(AreaRemoveTool.right, TextPositon.x + Measure.cx);
+					AreaRemoveTool.bottom = TextPositon.y + Measure.cy * 2;
+
+					POINT ClipFrom, ClipTo;
+					if (LiangBarsky(AreaRemoveTool, MidPointDistance, AreaRemoveTool.CenterPoint(), ClipFrom, ClipTo)) {
+						CPen DashedPen(PS_DOT, 1, Colours::OrangeTool.ToCOLORREF());
+						dc.SelectObject(&DashedPen);
+
+						dc.MoveTo(MidPointDistance);
+						dc.LineTo(ClipFrom);
+
+						dc.SelectObject(&SepToolColorPen);
+					}
+
+					AddScreenObject(SCREEN_SEP_TOOL, string(kv.first + "," + kv.second).c_str(), AreaRemoveTool, false, "");*/
+				}
+			}
+
+			dc.RestoreDC(saveDcActiveSepTool);
+
+			// Ac Symvols
+
+			
+
+			ToAddAcSymbolScreenObject.clear();
 
 			for (CRadarTarget radarTarget = GetPlugIn()->RadarTargetSelectFirst(); radarTarget.IsValid();
 				radarTarget = GetPlugIn()->RadarTargetSelectNext(radarTarget))
@@ -144,7 +275,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					continue;
 
 				if (EnableFilters && !owned_by_me) {
-					if (radarTarget.GetPosition().GetFlightLevel() < Filter_Lower || radarTarget.GetPosition().GetFlightLevel() > Filter_Upper)
+					if (radarTarget.GetPosition().GetFlightLevel() <= Filter_Lower || radarTarget.GetPosition().GetFlightLevel() >= Filter_Upper)
 						continue;
 				}
 
@@ -173,7 +304,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					AcColor = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ac_redundant"));
 				}
 
-				// If we are in a conflict group, we show a forced leader line of 2 minutes
+				// If we are in a conflict group, we show a forced leader line
 				// We also displayed speed vectors if turned on
 				if (this->CoFrancepluginInstance->ConflictGroups.find(CorrFp.GetCallsign()) != this->CoFrancepluginInstance->ConflictGroups.end() || EnableVV) {
 					
@@ -189,7 +320,10 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 				// We can now draw the ac symbol
 				POINT TargetCenter = ConvertCoordFromPositionToPixel(radarTarget.GetPosition().GetPosition());
-				g.DrawEllipse(&Pen(AcColor), Rect(TargetCenter.x - SymbolSize, TargetCenter.y - SymbolSize, SymbolSize * 2, SymbolSize * 2));
+				Rect SymbolRect = Rect(TargetCenter.x - SymbolSize, TargetCenter.y - SymbolSize, SymbolSize * 2, SymbolSize * 2);
+				g.DrawEllipse(&Pen(AcColor), SymbolRect);
+
+				ToAddAcSymbolScreenObject.insert(make_pair(radarTarget.GetCallsign(), CRect(SymbolRect.GetLeft(), SymbolRect.GetTop(), SymbolRect.GetRight(), SymbolRect.GetBottom())));
 				
 				int TrailSize = SymbolSize;
 				int NumberOfTrails = toml::find<int>(this->CoFrancepluginInstance->CoFranceConfig, "ac_symbols", "number_of_trails");
@@ -281,6 +415,20 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 	if (ObjectType == BUTTON_FILTRES_UPPER) {
 		GetPlugIn()->OpenPopupList(Area, "Filtres Superieurs", 1);
 		FillInAltitudeList(GetPlugIn(), FUNCTION_SET_HIGHER_FILTER, Filter_Upper);
+	}
+
+	if (ObjectType == AC_SYMBOL) {
+		if (FirstSepToolCallsign.size() > 0 && FirstSepToolCallsign != string(sObjectId)) {
+			ActiveSepTools.insert(make_pair(FirstSepToolCallsign, sObjectId));
+			FirstSepToolCallsign = "";
+		}
+		else if (FirstSepToolCallsign == string(sObjectId)) {
+			FirstSepToolCallsign = "";
+		}
+		else {
+			FirstSepToolCallsign = sObjectId;
+		}
+			
 	}
 
 	RequestRefresh();

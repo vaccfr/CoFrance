@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include "CoFrancePlugIn.h"
+#include "VERA.h"
 
 
 using namespace Gdiplus;
@@ -29,6 +30,12 @@ public:
 	int VV_Minutes = 2;
 
 	bool ApproachMode = false;
+
+	string FirstSepToolCallsign = "";
+	map<string, string> ActiveSepTools;
+	map<string, CRect> ToAddAcSymbolScreenObject;
+
+	int AC_SYMBOL = 800;
 
 	int BUTTON_FILTRES = 950;
 	int BUTTON_FILTRES_LOWER = 951;
