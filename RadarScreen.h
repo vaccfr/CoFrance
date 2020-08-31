@@ -29,6 +29,13 @@ public:
 	bool EnableVV = false;
 	int VV_Minutes = 2;
 
+	char* SaveData_RadarDrawing = "RAD";
+	char* SaveData_Filters = "FILT";
+	char* SaveData_FiltersAbove = "FILTABOVE";
+	char* SaveData_FiltersBelow = "FILTBELOW";
+	char* SaveData_VVEnabled = "VV";
+	char* SaveData_VVTime = "VVTIME";
+
 	bool ApproachMode = false;
 
 	string FirstSepToolCallsign = "";
@@ -57,10 +64,11 @@ public:
 
 	void OnRefresh(HDC hDC, int Phase);
 
-	inline void OnAsrContentToBeClosed()
-	{
-		delete this;
-	};
+	void OnAsrContentToBeClosed();
+
+	void OnAsrContentToBeSaved();
+
+	void OnAsrContentLoaded(bool Loaded);
 
 	void DrawFixedSizedText(Graphics* g, CPosition TextPosition, int Size, string text, Color c) {
 		

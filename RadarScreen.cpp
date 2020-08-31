@@ -220,6 +220,8 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 						AreaRemoveTool.right = max(AreaRemoveTool.right, TextPositon.x + Measure.cx);
 						AreaRemoveTool.bottom = TextPositon.y + Measure.cy * 2;
+						AreaRemoveTool.right += 10;
+						AreaRemoveTool.left -= 10;
 						AreaRemoveTool.InflateRect(4, 4);
 
 						if (IsInRect(MousePt, AreaRemoveTool)) {
@@ -232,20 +234,24 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 						}
 					}
 					else {
+						AreaRemoveTool.right += 10;
+						AreaRemoveTool.left -= 10;
 						AreaRemoveTool.InflateRect(4, 4);
 					}
-					
 
 					POINT ClipFrom, ClipTo;
 					if (LiangBarsky(AreaRemoveTool, MidPointDistance, AreaRemoveTool.CenterPoint(), ClipFrom, ClipTo))
 						g.DrawLine(&SepToolPen, Point(MidPointDistance.x, MidPointDistance.y), Point(ClipFrom.x, ClipFrom.y));
 
 					if (IsInRect(MousePt, AreaRemoveTool)) {
+						
 						Rect ConcernedRect = Rect(AreaRemoveTool.left, AreaRemoveTool.top, AreaRemoveTool.Width(), AreaRemoveTool.Height());
 						g.FillRectangle(&SolidBrush(SepToolBackground), ConcernedRect);
+						dc.Draw3dRect(AreaRemoveTool, StaticColours::MenuButtonTop.ToCOLORREF(), StaticColours::MenuButtonBottom.ToCOLORREF());
+
 						if (vera.minDistanceNm != -1)
-							g.DrawLine(&SepToolBorder, Point(AreaRemoveTool.left, AreaRemoveTool.top-1 + AreaRemoveTool.Height() /2), Point(AreaRemoveTool.right, AreaRemoveTool.top-1 + AreaRemoveTool.Height() / 2));
-						g.DrawRectangle(&SepToolBorder, ConcernedRect);
+							g.DrawLine(&Pen(StaticColours::MenuButtonTop), Point(AreaRemoveTool.left, AreaRemoveTool.top-1 + AreaRemoveTool.Height() /2), Point(AreaRemoveTool.right, AreaRemoveTool.top-1 + AreaRemoveTool.Height() / 2));
+						
 					}
 
 					dc.TextOutA(TextPositon.x, TextPositon.y, distanceText.c_str());
@@ -257,7 +263,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 						dc.SetTextColor(SepToolColour.ToCOLORREF());
 					}
 
-					dc.TextOutA(TextPositon.x, TextPositon.y + Measure.cy, veraDistanceText.c_str());
+					dc.TextOutA(TextPositon.x, TextPositon.y + Measure.cy + 3, veraDistanceText.c_str());
 
 					AddScreenObject(SCREEN_SEP_TOOL, string(kv.first + "," + kv.second).c_str(), AreaRemoveTool, false, "");
 				}
@@ -390,6 +396,45 @@ close_all:
 
 	dc.Detach();
 	g.ReleaseHDC(hDC);
+}
+
+void RadarScreen::OnAsrContentToBeClosed()
+{
+	delete this;
+}
+
+void RadarScreen::OnAsrContentToBeSaved()
+{
+	SaveDataToAsr(SaveData_RadarDrawing, "CoFrance Radar Drawings", EnableTagDrawings ? "1" : "0");
+	SaveDataToAsr(SaveData_Filters, "CoFrance Filters Enabled", EnableFilters ? "1" : "0");
+	SaveDataToAsr(SaveData_VVEnabled, "CoFrance Vecteur Vitesse Enabled", EnableVV ? "1" : "0");
+
+	SaveDataToAsr(SaveData_FiltersAbove, "CoFrance Filters Above", to_string(Filter_Upper).c_str());
+	SaveDataToAsr(SaveData_FiltersBelow, "CoFrance Filters Below", to_string(Filter_Lower).c_str());
+	SaveDataToAsr(SaveData_VVTime, "CoFrance Vecteur Vitesse Time", to_string(VV_Minutes).c_str());
+}
+
+void RadarScreen::OnAsrContentLoaded(bool Loaded)
+{
+	if (!Loaded)
+		return;
+
+	const char* j_value;
+	if ((j_value = GetDataFromAsr(SaveData_RadarDrawing)) != NULL)
+		EnableTagDrawings = (j_value == "1");
+
+	if ((j_value = GetDataFromAsr(SaveData_Filters)) != NULL)
+		EnableFilters = (j_value == "1");
+
+	if ((j_value = GetDataFromAsr(SaveData_VVEnabled)) != NULL)
+		EnableVV = (j_value == "1");
+
+	if ((j_value = GetDataFromAsr(SaveData_FiltersAbove)) != NULL)
+		Filter_Upper = stoi(j_value);
+	if ((j_value = GetDataFromAsr(SaveData_FiltersBelow)) != NULL)
+		Filter_Lower = stoi(j_value);
+	if ((j_value = GetDataFromAsr(SaveData_VVTime)) != NULL)
+		VV_Minutes = stoi(j_value);
 }
 
 void RadarScreen::OnOverScreenObject(int ObjectType, const char* sObjectId, POINT Pt, RECT Area)
