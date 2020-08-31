@@ -408,6 +408,7 @@ void RadarScreen::OnAsrContentToBeSaved()
 	SaveDataToAsr(SaveData_RadarDrawing, "CoFrance Radar Drawings", EnableTagDrawings ? "1" : "0");
 	SaveDataToAsr(SaveData_Filters, "CoFrance Filters Enabled", EnableFilters ? "1" : "0");
 	SaveDataToAsr(SaveData_VVEnabled, "CoFrance Vecteur Vitesse Enabled", EnableVV ? "1" : "0");
+	SaveDataToAsr(SaveData_APP, "CoFrance APP Mode", ApproachMode ? "1" : "0");
 
 	SaveDataToAsr(SaveData_FiltersAbove, "CoFrance Filters Above", to_string(Filter_Upper).c_str());
 	SaveDataToAsr(SaveData_FiltersBelow, "CoFrance Filters Below", to_string(Filter_Lower).c_str());
@@ -421,13 +422,16 @@ void RadarScreen::OnAsrContentLoaded(bool Loaded)
 
 	const char* j_value;
 	if ((j_value = GetDataFromAsr(SaveData_RadarDrawing)) != NULL)
-		EnableTagDrawings = (j_value == "1");
+		EnableTagDrawings = (stoi(j_value) == 1);
 
 	if ((j_value = GetDataFromAsr(SaveData_Filters)) != NULL)
-		EnableFilters = (j_value == "1");
+		EnableFilters = (stoi(j_value) == 1);
 
 	if ((j_value = GetDataFromAsr(SaveData_VVEnabled)) != NULL)
-		EnableVV = (j_value == "1");
+		EnableVV = (stoi(j_value) == 1);
+
+	if ((j_value = GetDataFromAsr(SaveData_APP)) != NULL)
+		ApproachMode = (stoi(j_value) == 1);
 
 	if ((j_value = GetDataFromAsr(SaveData_FiltersAbove)) != NULL)
 		Filter_Upper = stoi(j_value);

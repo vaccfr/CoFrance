@@ -35,6 +35,7 @@ public:
 	char* SaveData_FiltersBelow = "FILTBELOW";
 	char* SaveData_VVEnabled = "VV";
 	char* SaveData_VVTime = "VVTIME";
+	char* SaveData_APP = "APP";
 
 	bool ApproachMode = false;
 
