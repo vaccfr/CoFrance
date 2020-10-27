@@ -33,7 +33,13 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 
     RegisterTagItemType("RFL", CoFranceTags::RFL);
 
+    RegisterTagItemType("CFL", CoFranceTags::CFL);
+    RegisterTagItemType("CFL (Detail)", CoFranceTags::CFL_DETAILED);
+
+    RegisterTagItemType("Abbreviated SID", CoFranceTags::ABBR_SID);
+
     RegisterTagItemFunction("Assign Conflict Group", CoFranceTags::FUNCTION_CONFLICT_POPUP);
+
 
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
@@ -68,7 +74,8 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
             return;
 
         int gs = roundUp(RadarTarget.GetPosition().GetReportedGS(), 10);
-        strcpy_s(sItemString, 16, to_string(gs).substr(0, 2).c_str());
+        string gs_s = padWithZeros(3, gs);
+        strcpy_s(sItemString, 16, gs_s.substr(0, 2).c_str());
     }
 
     if (ItemCode == CoFranceTags::SCRATCHPAD_INDIC) {
@@ -107,6 +114,16 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
         strcpy_s(sItemString, 16, "");
     }
 
+    if (ItemCode == CoFranceTags::ABBR_SID) {
+        string abbr_sid = "";
+        if (strlen(FlightPlan.GetFlightPlanData().GetSidName()) > 0) {
+            abbr_sid = FlightPlan.GetFlightPlanData().GetSidName();
+            abbr_sid = abbr_sid.substr(0, 3);
+        }
+
+        strcpy_s(sItemString, 16, abbr_sid.c_str());
+    }
+
     if (ItemCode == CoFranceTags::DUMMY_TAGGED) {
         if (DetailedAircraft == RadarTarget.GetCallsign())
             DetailedAircraft = "";
@@ -117,11 +134,50 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
     if (ItemCode == CoFranceTags::RFL) {
         string rfl = "RFL";
         if (FlightPlan.IsValid()) {
-            if (FlightPlan.GetFinalAltitude() > 0)
+            if (FlightPlan.GetFinalAltitude() > 0) {
                 rfl = padWithZeros(2, FlightPlan.GetFinalAltitude() / 1000);
+
+                // VFRs can be cleared up to 500 feet interval so we have to display more
+                if (FlightPlan.GetFlightPlanData().GetPlanType() == "V")
+                    rfl = padWithZeros(3, FlightPlan.GetClearedAltitude() / 100);
+
+                if (FlightPlan.GetClearedAltitude() <= GetTransitionAltitude())
+                    rfl = "A" + rfl;
+            }
         }
 
         strcpy_s(sItemString, 16, rfl.c_str());
+    }
+
+    if (ItemCode == CoFranceTags::CFL || ItemCode == CoFranceTags::CFL_DETAILED) {
+        string cfl = "";
+        if (ItemCode == CoFranceTags::CFL_DETAILED)
+            cfl = "CFL";
+
+        if (FlightPlan.IsValid()) {
+            if (FlightPlan.GetClearedAltitude() > 0) {
+                cfl = padWithZeros(2, FlightPlan.GetClearedAltitude() / 1000);
+
+                // VFRs can be cleared up to 500 feet interval so we have to display more
+                if (FlightPlan.GetFlightPlanData().GetPlanType() == "V")
+                    cfl = padWithZeros(3, FlightPlan.GetClearedAltitude() / 100);
+
+                if (FlightPlan.GetClearedAltitude() <= GetTransitionAltitude())
+                    cfl = "A" + cfl;
+            }
+
+            if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() == 1)
+                cfl = "®";
+
+            if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() == 2)
+                cfl = "©";
+
+            // If not detailed and reached alt, then nothing to show
+            if (ItemCode == CoFranceTags::CFL && abs(RadarTarget.GetPosition().GetFlightLevel() - FlightPlan.GetClearedAltitude()) < 100)
+                cfl = "";
+        }
+
+        strcpy_s(sItemString, 16, cfl.c_str());
     }
 
     if (ItemCode == CoFranceTags::VZ_INDICATOR) {
