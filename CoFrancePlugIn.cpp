@@ -139,9 +139,9 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
 
                 // VFRs can be cleared up to 500 feet interval so we have to display more
                 if (FlightPlan.GetFlightPlanData().GetPlanType() == "V")
-                    rfl = padWithZeros(3, FlightPlan.GetClearedAltitude() / 100);
+                    rfl = padWithZeros(3, FlightPlan.GetFinalAltitude() / 100);
 
-                if (FlightPlan.GetClearedAltitude() <= GetTransitionAltitude())
+                if (FlightPlan.GetFinalAltitude() <= GetTransitionAltitude())
                     rfl = "A" + rfl;
             }
         }
