@@ -38,8 +38,11 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 
     RegisterTagItemType("Abbreviated SID", CoFranceTags::ABBR_SID);
 
-    RegisterTagItemFunction("Assign Conflict Group", CoFranceTags::FUNCTION_CONFLICT_POPUP);
+    RegisterTagItemType("Approach Intention Code", CoFranceTags::APP_INTENTION);
 
+    RegisterTagItemType("Vertical Speed", CoFranceTags::VZ);
+
+    RegisterTagItemFunction("Assign Conflict Group", CoFranceTags::FUNCTION_CONFLICT_POPUP);
 
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
@@ -114,16 +117,6 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
         strcpy_s(sItemString, 16, "");
     }
 
-    if (ItemCode == CoFranceTags::ABBR_SID) {
-        string abbr_sid = "";
-        if (strlen(FlightPlan.GetFlightPlanData().GetSidName()) > 0) {
-            abbr_sid = FlightPlan.GetFlightPlanData().GetSidName();
-            abbr_sid = abbr_sid.substr(0, 3);
-        }
-
-        strcpy_s(sItemString, 16, abbr_sid.c_str());
-    }
-
     if (ItemCode == CoFranceTags::DUMMY_TAGGED) {
         if (DetailedAircraft == RadarTarget.GetCallsign())
             DetailedAircraft = "";
@@ -191,6 +184,56 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
             tendency = delta_fl < 0 ? "|" : "^";
 
         strcpy_s(sItemString, 16, tendency.c_str());
+    }
+
+    if (ItemCode == CoFranceTags::APP_INTENTION) {
+        // Three types of codes:
+        // 1. VFR
+        //
+        if ()
+
+        string abbr_sid = "";
+        if (strlen(FlightPlan.GetFlightPlanData().GetSidName()) > 0) {
+            abbr_sid = FlightPlan.GetFlightPlanData().GetSidName();
+            abbr_sid = abbr_sid.substr(0, 3);
+        }
+
+        strcpy_s(sItemString, 16, abbr_sid.c_str());
+    }
+
+    if (ItemCode == CoFranceTags::VZ) {
+        if (!RadarTarget.IsValid())
+            return;
+
+        string VerticalRate = "00";
+        CRadarTargetPositionData pos = RadarTarget.GetPosition();
+        CRadarTargetPositionData oldpos = RadarTarget.GetPreviousPosition(pos);
+        int mathVerticalRate = 0;
+        if (pos.IsValid() && oldpos.IsValid()) {
+            int deltaalt = pos.GetFlightLevel() - oldpos.GetFlightLevel();
+            int deltaT = oldpos.GetReceivedTime() - pos.GetReceivedTime();
+
+            if (deltaT > 0) {
+                float vz = abs(deltaalt) * (60.0f / deltaT);
+                mathVerticalRate = (int)vz;
+
+                // If the rate is too much
+                if ((int)abs(vz) >= 9999) {
+                    VerticalRate = "++";
+                    if (deltaalt < 0)
+                        VerticalRate = "--";
+                }
+                else if (abs(vz) >= 100 && abs(deltaalt) >= 20) {
+                    string rate = padWithZeros(2, (int)abs(vz / 100));
+                    VerticalRate = "+" + rate;
+
+                    if (deltaalt < 0)
+                        VerticalRate = "-" + rate;
+                }
+            }
+        }
+
+        strcpy_s(sItemString, 16, VerticalRate.c_str());
     }
     
     if (ItemCode == CoFranceTags::COPXN_POINT_REDUCED) {

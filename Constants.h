@@ -30,7 +30,8 @@ namespace CoFranceTags {
     const int CONFLICT_GROUP_TAGGED = 11;
     const int CFL = 12;
     const int CFL_DETAILED = 13;
-    const int ABBR_SID = 14;
+    const int APP_INTENTION = 15;
+    const int VZ = 16;
 
     const int FUNCTION_CONFLICT_POPUP = 500;
     const int FUNCTION_HANDLE_CONFLICT_GROUP = 501;
