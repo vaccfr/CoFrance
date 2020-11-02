@@ -21,7 +21,6 @@ The project is an MFC C++ dynamic library.
 
 A special thank you to the following people:
 - [@pierr3](https://github.com/pierr3), for creating the plugin;
-- 
 
 ### License
 
@@ -42,5 +41,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 This project is specifically built for the French vAcc which may deviate from the license as agreed with the author.
-
-All VATFrance materials do not fall under this license, and are (c) VATFrance 2020.
