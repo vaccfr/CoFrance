@@ -65,7 +65,6 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 				&& conflicting.GetPosition().GetPressureAltitude() <= level_reduced_sep)
 			{
 				separation_distance = low_level_sep;
-				extrapolationTime = 120;
 			}
 
 			if (conflicting.GetPosition().GetRadarFlags() == EuroScopePlugIn::RADAR_POSITION_PRIMARY)
@@ -93,10 +92,10 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 				continue;
 			}
 
-			for (int i = 30; i <= time_to_extrapolate; i += 30)
+			for (int i = 10; i <= time_to_extrapolate; i += 10)
 			{
-				CPosition ex1 = Extrapolate(rt.GetPosition().GetPosition(), rt.GetTrackHeading(), double(rt.GetPosition().GetReportedGS() * 0.514444) * (i));
-				CPosition ex2 = Extrapolate(conflicting.GetPosition().GetPosition(), conflicting.GetTrackHeading(), double(conflicting.GetPosition().GetReportedGS() * 0.514444) * (i));
+				CPosition ex1 = Extrapolate(rt.GetPosition().GetPosition(), rt.GetTrackHeading(), rt.GetPosition().GetReportedGS() * 0.000277778 * i);
+				CPosition ex2 = Extrapolate(conflicting.GetPosition().GetPosition(), conflicting.GetTrackHeading(), conflicting.GetPosition().GetReportedGS() * 0.000277778 * i);
 
 				int alt1 = rt.GetPosition().GetPressureAltitude();
 				int alt2 = conflicting.GetPosition().GetPressureAltitude();

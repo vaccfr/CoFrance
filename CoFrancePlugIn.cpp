@@ -379,7 +379,7 @@ void CoFrancePlugIn::OnTimer(int Counter)
     }
 
     Stca->OnRefresh(this);
-    Blink != Blink;
+    Blink = !Blink;
 }
 
 void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area)
