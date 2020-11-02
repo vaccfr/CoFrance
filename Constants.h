@@ -6,9 +6,9 @@
 #include <sstream>
 
 #define MY_PLUGIN_NAME "CoFrance"
-#define MY_PLUGIN_VERSION "0.1"
+#define MY_PLUGIN_VERSION "1.0"
 #define MY_PLUGIN_DEVELOPER "Pierre Ferran"
-#define MY_PLUGIN_COPYRIGHT "MIT License"
+#define MY_PLUGIN_COPYRIGHT "GPL v3"
 
 #define CONFIG_ONLINE_URL_BASE "https://vatsim.fr"
 #define CONFIG_ONLINE_URL_PATH "/api/cfr/config"
@@ -42,10 +42,10 @@ namespace CoFranceTags {
 }
 
 namespace CoFranceCharacters {
-    const string Moon = "±";
-    const string Star = "§";
-    const string Losange = "÷";
-    const string Pen = "µ";
+    const string Moon = "Â±";
+    const string Star = "Â§";
+    const string Losange = "Ã·";
+    const string Pen = "Âµ";
 }
 
 namespace StaticColours {
