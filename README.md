@@ -1,7 +1,7 @@
 <p align="center" style="background: black;"><img src="https://cdn.discordapp.com/attachments/721714238619648101/740926322208931850/VATFrance_WIDE.png" width="auto" style="background: black;"></p>
 
 <p align="center">Repo officiel du plugin EuroScope pour controleurs francais<br>
-<a href="https://new.vatfrance.org/fr" target="_blank">https://new.vatfrance.org/fr</a>
+<a href="https://vatsim.fr/" target="_blank">https://vatsim.fr/</a>
 </p>
 
 ---
