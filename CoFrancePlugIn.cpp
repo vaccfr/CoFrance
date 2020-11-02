@@ -190,14 +190,57 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
         // 2. Arrival (Assigned Runway with different colours)
         // 3. Departure (Abbreviated SID)
         
+        if (FlightPlan.IsValid()) {
 
-        string abbr_sid = "";
-        if (strlen(FlightPlan.GetFlightPlanData().GetSidName()) > 0) {
-            abbr_sid = FlightPlan.GetFlightPlanData().GetSidName();
-            abbr_sid = abbr_sid.substr(0, 3);
+            if (FlightPlan.GetFlightPlanData().GetPlanType()[0] == 'V') {
+                // We have a VFR flight
+                *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_vfr");
+                *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+
+                strcpy_s(sItemString, 16, "VFR");
+            }
+            else {
+
+                // We have a departure
+                if (FlightPlan.GetDistanceFromOrigin() <= 50) {
+                    string abbr_sid = "";
+                    if (strlen(FlightPlan.GetFlightPlanData().GetSidName()) > 0) {
+                        abbr_sid = FlightPlan.GetFlightPlanData().GetSidName();
+                        abbr_sid = abbr_sid.substr(0, 3);
+                    }
+
+                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_departure");
+                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+
+                    strcpy_s(sItemString, 16, abbr_sid.c_str());
+                }
+                else {
+                    // We have an arrival
+                    string arr_rwy = "";
+                    if (strlen(FlightPlan.GetFlightPlanData().GetArrivalRwy()) > 0) {
+                        arr_rwy = FlightPlan.GetFlightPlanData().GetArrivalRwy();
+                        arr_rwy = arr_rwy.substr(0, 3);
+                    }
+
+                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_arrival");
+                    
+                    if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetDestination()) &&
+                        (startsWith("26", FlightPlan.GetFlightPlanData().GetArrivalRwy()) || startsWith("08", FlightPlan.GetFlightPlanData().GetArrivalRwy()))) {
+                        // South arrival at LFPG, different colour
+                        element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_lfpg_arr_south");
+                    }
+
+                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+
+                    strcpy_s(sItemString, 16, arr_rwy.c_str());
+                }
+            }
+
         }
 
-        strcpy_s(sItemString, 16, abbr_sid.c_str());
     }
 
     if (ItemCode == CoFranceTags::VZ) {
@@ -254,6 +297,11 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
             }
                 
         }
+
+        if (string(FlightPlan.GetControllerAssignedData().GetDirectToPointName()) == copx) {\
+            // If direct to COPX has been given, no need to display it
+            copx = "";
+        }
         
         strcpy_s(sItemString, 16, copx.substr(0, 15).c_str());
     }
@@ -264,9 +312,11 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
 
         string copx_alt = "";
 
-        if (FlightPlan.GetTrackingControllerIsMe() && FlightPlan.GetExitCoordinationAltitude() > 0) {
-            copx_alt = string("x") + padWithZeros(2, FlightPlan.GetExitCoordinationAltitude() / 1000);
-            *pColorCode = GetCoordinationTagColour(FlightPlan.GetExitCoordinationAltitudeState());
+        if (FlightPlan.GetTrackingControllerIsMe()) {
+            if (FlightPlan.GetExitCoordinationAltitude() > 0) {
+                copx_alt = string("x") + padWithZeros(2, FlightPlan.GetExitCoordinationAltitude() / 1000);
+                *pColorCode = GetCoordinationTagColour(FlightPlan.GetExitCoordinationAltitudeState());
+            }
         }
         else if (FlightPlan.GetEntryCoordinationAltitude() > 0) {
             copx_alt = string("e") + padWithZeros(2, FlightPlan.GetEntryCoordinationAltitude() / 1000);
@@ -440,9 +490,11 @@ string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin,
 
                 toml::value StandData = toml::parse(is, "std::string");
 
+                cli.stop();
                 return toml::find<string>(StandData, "data", "stand");
             }
             else {
+                cli.stop();
                 return "NoGate";
             }
         }
@@ -452,4 +504,6 @@ string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin,
     catch (const std::exception& exc) {
         
     }
+
+    return "NoGate";
 }

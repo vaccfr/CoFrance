@@ -63,6 +63,12 @@ namespace StaticColours {
 const static int ButtonPaddingSides = 5;
 const static int ButtonPaddingTop = 2;
 
+inline static bool startsWith(const char* pre, const char* str)
+{
+    size_t lenpre = strlen(pre), lenstr = strlen(str);
+    return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
+};
+
 static int roundUp(int numToRound, int multiple)
 {
     if (multiple == 0)
