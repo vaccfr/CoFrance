@@ -2,6 +2,9 @@
 #include "EuroScopePlugIn.h"
 #include "Constants.h"
 #include <string>
+#include <algorithm>
+#include <thread>
+#include <future>
 
 using namespace EuroScopePlugIn;
 using namespace Gdiplus;
@@ -28,13 +31,20 @@ public:
 
     void OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area);
 
+    string LoadRemoteStandAssignment(string callsign, string origin, string destination, string wtc);
+
+    void OnRadarTargetPositionUpdate(CRadarTarget RadarTarget);
+
     toml::value CoFranceConfig;
+    vector<string> StandApiAvailableFor;
+    map<string, future<string>> PendingStands;
     string DetailedAircraft;
     string DllPath;
     map<string, string> ConflictGroups;
     bool CanLoadRadarScreen = true;
 
     void LoadConfigFile(bool fromWeb = true);
+
 
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;

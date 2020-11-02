@@ -36,8 +36,6 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
     RegisterTagItemType("CFL", CoFranceTags::CFL);
     RegisterTagItemType("CFL (Detail)", CoFranceTags::CFL_DETAILED);
 
-    RegisterTagItemType("Abbreviated SID", CoFranceTags::ABBR_SID);
-
     RegisterTagItemType("Approach Intention Code", CoFranceTags::APP_INTENTION);
 
     RegisterTagItemType("Vertical Speed", CoFranceTags::VZ);
@@ -189,8 +187,9 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
     if (ItemCode == CoFranceTags::APP_INTENTION) {
         // Three types of codes:
         // 1. VFR
-        //
-        if ()
+        // 2. Arrival (Assigned Runway with different colours)
+        // 3. Departure (Abbreviated SID)
+        
 
         string abbr_sid = "";
         if (strlen(FlightPlan.GetFlightPlanData().GetSidName()) > 0) {
@@ -288,6 +287,25 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
 
 void CoFrancePlugIn::OnTimer(int Counter)
 {
+    for (auto it = PendingStands.begin(), next_it = it; it != PendingStands.end(); it = next_it)
+    {
+        bool must_delete = false;
+        if (it->second.valid() && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+            std::string stand = it->second.get();
+
+            string ScratchPad = FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().GetScratchPadString();
+            ScratchPad = "STAND:" + stand +" " + ScratchPad;
+            FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().SetScratchPadString(ScratchPad.c_str());
+
+            must_delete = true;
+        }
+
+        ++next_it;
+        if (must_delete)
+        {
+            PendingStands.erase(it);
+        }
+    }
 }
 
 void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area)
@@ -308,6 +326,30 @@ void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POI
             ConflictGroups[FlightPlanSelectASEL().GetCallsign()] = sItemString;
     }
 
+}
+
+void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
+{
+    CFlightPlan CorrFp = RadarTarget.GetCorrelatedFlightPlan();
+    if (!CorrFp.IsValid() || !CorrFp.GetTrackingControllerIsMe())
+        return;
+
+    string ScratchPad = string(CorrFp.GetControllerAssignedData().GetScratchPadString());
+
+    // There is already an assigned stand
+    if (ScratchPad.find("STAND:") != std::string::npos)
+        return;
+
+    if (std::find(StandApiAvailableFor.begin(), StandApiAvailableFor.end(), string(CorrFp.GetFlightPlanData().GetDestination())) != StandApiAvailableFor.end()) {
+        if (CorrFp.GetDistanceToDestination() < 10) {
+            if (PendingStands.find(string(CorrFp.GetCallsign())) == PendingStands.end()) {
+                PendingStands.insert(std::make_pair(string(CorrFp.GetCallsign()), 
+                    async(&CoFrancePlugIn::LoadRemoteStandAssignment, this, string(CorrFp.GetCallsign()), string(CorrFp.GetFlightPlanData().GetOrigin()),
+                        string(CorrFp.GetFlightPlanData().GetDestination()),
+                        string(string("") + CorrFp.GetFlightPlanData().GetAircraftWtc()))));
+            }
+        }
+    }
 }
 
 void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
@@ -345,5 +387,66 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
     catch (const std::exception& exc) {
         CanLoadRadarScreen = false;
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading config file " + string(exc.what())).c_str(), false, false, false, false, false);
+    }
+
+    DisplayUserMessage("Message", "CoFrance PlugIn", "Reading stand API config...", false, false, false, false, false);
+
+    try {
+        if (fromWeb) {
+            httplib::Client cli(CONFIG_ONLINE_URL_BASE);
+            if (auto res = cli.Get(CONFIG_ONLINE_STAND_API_URL_PATH)) {
+                if (res->status == 200) {
+                    std::istringstream is(res->body, std::ios_base::binary | std::ios_base::in);
+
+                    toml::value StandApiConfig = toml::parse(is, "std::string");
+
+                    StandApiAvailableFor = toml::find<vector<string>>(StandApiConfig, "data", "icaos");
+                }
+                else
+                    fromWeb = false;
+            }
+            else
+                fromWeb = false;
+
+            cli.stop();
+
+            if (!fromWeb)
+                DisplayUserMessage("Message", "CoFrance PlugIn", "Error loading stand api config, reverting to local file!", false, false, false, false, false);
+        }
+
+    }
+    catch (const std::exception& exc) {
+        DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading stand api file " + string(exc.what())).c_str(), false, false, false, false, false);
+    }
+}
+
+string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin, string destination, string wtc)
+{
+    try {
+        httplib::Client cli(CONFIG_ONLINE_URL_BASE);
+        httplib::Params params;
+        params.emplace("callsign", callsign);
+        params.emplace("dep", origin);
+        params.emplace("arr", destination);
+        params.emplace("wtc", wtc);
+
+
+        if (auto res = cli.Post(CONFIG_ONLINE_STAND_API_QUERY_URL_PATH, params)) {
+            if (res->status == 200) {
+                std::istringstream is(res->body, std::ios_base::binary | std::ios_base::in);
+
+                toml::value StandData = toml::parse(is, "std::string");
+
+                return toml::find<string>(StandData, "data", "stand");
+            }
+            else {
+                return "NoGate";
+            }
+        }
+
+        cli.stop();
+    }
+    catch (const std::exception& exc) {
+        
     }
 }
