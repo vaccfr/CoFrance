@@ -16,6 +16,8 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
     
     LoadConfigFile();
 
+    Stca = new CSTCA(CoFranceConfig);
+
     // Register tag items
     RegisterTagItemType("Two number ground speed", CoFranceTags::GS);
     RegisterTagItemType("Vertical Indicator", CoFranceTags::VZ_INDICATOR);
@@ -39,6 +41,8 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
     RegisterTagItemType("Approach Intention Code", CoFranceTags::APP_INTENTION);
 
     RegisterTagItemType("Vertical Speed", CoFranceTags::VZ);
+
+    RegisterTagItemType("STCA Indicator", CoFranceTags::STCA);
 
     RegisterTagItemFunction("Assign Conflict Group", CoFranceTags::FUNCTION_CONFLICT_POPUP);
 
@@ -333,6 +337,23 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
 
         strcpy_s(sItemString, 16, copx_alt.substr(0, 15).c_str());
     }
+
+    if (ItemCode == CoFranceTags::STCA) {
+        if (Stca->IsSTCA(RadarTarget.GetCallsign())) {
+
+            *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+            auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "sep_warning");
+            if (Blink)
+                element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "stca_warning");
+            
+            *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+
+            strcpy_s(sItemString, 16, "STCA");
+        }
+        else {
+            strcpy_s(sItemString, 16, "");
+        }
+    }
 }
 
 void CoFrancePlugIn::OnTimer(int Counter)
@@ -356,6 +377,9 @@ void CoFrancePlugIn::OnTimer(int Counter)
             PendingStands.erase(it);
         }
     }
+
+    Stca->OnRefresh(this);
+    Blink != Blink;
 }
 
 void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area)

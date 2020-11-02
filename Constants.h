@@ -34,6 +34,7 @@ namespace CoFranceTags {
     const int CFL_DETAILED = 13;
     const int APP_INTENTION = 15;
     const int VZ = 16;
+    const int STCA = 17;
 
     const int FUNCTION_CONFLICT_POPUP = 500;
     const int FUNCTION_HANDLE_CONFLICT_GROUP = 501;

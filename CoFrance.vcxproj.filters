@@ -27,6 +27,9 @@
     <ClCompile Include="RadarScreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="STCA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="CoFrance.def">
@@ -63,6 +66,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VERA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STCA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

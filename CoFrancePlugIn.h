@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <thread>
 #include <future>
+#include "STCA.h"
 
 using namespace EuroScopePlugIn;
 using namespace Gdiplus;
@@ -42,9 +43,11 @@ public:
     string DllPath;
     map<string, string> ConflictGroups;
     bool CanLoadRadarScreen = true;
+    bool Blink = false;
+
+    CSTCA *Stca = nullptr;
 
     void LoadConfigFile(bool fromWeb = true);
-
 
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
