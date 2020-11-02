@@ -185,6 +185,12 @@ inline static std::vector<std::string> split(const std::string& s, char delim) {
     return elems;
 };
 
+inline static string join_vector(vector<string> v, string sep = ", ") {
+    std::string s;
+    for (const auto& piece : v) s += piece + sep;
+    return s;
+}
+
 // Liang-Barsky function by Daniel White @ http://www.skytopia.com/project/articles/compsci/clipping.html
 // This function inputs 8 numbers, and outputs 4 new numbers (plus a boolean value to say whether the clipped line is drawn at all).
 //

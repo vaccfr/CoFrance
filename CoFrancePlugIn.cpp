@@ -294,7 +294,7 @@ void CoFrancePlugIn::OnTimer(int Counter)
             std::string stand = it->second.get();
 
             string ScratchPad = FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().GetScratchPadString();
-            ScratchPad = "STAND:" + stand +" " + ScratchPad;
+            ScratchPad = "STAND=" + stand + " " + ScratchPad;
             FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().SetScratchPadString(ScratchPad.c_str());
 
             must_delete = true;
@@ -330,19 +330,25 @@ void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POI
 
 void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 {
+
     CFlightPlan CorrFp = RadarTarget.GetCorrelatedFlightPlan();
     if (!CorrFp.IsValid() || !CorrFp.GetTrackingControllerIsMe())
         return;
 
     string ScratchPad = string(CorrFp.GetControllerAssignedData().GetScratchPadString());
 
+
     // There is already an assigned stand
-    if (ScratchPad.find("STAND:") != std::string::npos)
+    if (ScratchPad.find("STAND=") != std::string::npos)
         return;
 
+    
     if (std::find(StandApiAvailableFor.begin(), StandApiAvailableFor.end(), string(CorrFp.GetFlightPlanData().GetDestination())) != StandApiAvailableFor.end()) {
+
         if (CorrFp.GetDistanceToDestination() < 10) {
+           
             if (PendingStands.find(string(CorrFp.GetCallsign())) == PendingStands.end()) {
+                
                 PendingStands.insert(std::make_pair(string(CorrFp.GetCallsign()), 
                     async(&CoFrancePlugIn::LoadRemoteStandAssignment, this, string(CorrFp.GetCallsign()), string(CorrFp.GetFlightPlanData().GetOrigin()),
                         string(CorrFp.GetFlightPlanData().GetDestination()),
@@ -401,17 +407,13 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
                     toml::value StandApiConfig = toml::parse(is, "std::string");
 
                     StandApiAvailableFor = toml::find<vector<string>>(StandApiConfig, "data", "icaos");
+
+                    DisplayUserMessage("Message", "CoFrance PlugIn", string("Stand API available for: " + join_vector(StandApiAvailableFor)).c_str(), false, false, false, false, false);
                 }
-                else
-                    fromWeb = false;
             }
-            else
-                fromWeb = false;
 
             cli.stop();
 
-            if (!fromWeb)
-                DisplayUserMessage("Message", "CoFrance PlugIn", "Error loading stand api config, reverting to local file!", false, false, false, false, false);
         }
 
     }
@@ -433,6 +435,7 @@ string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin,
 
         if (auto res = cli.Post(CONFIG_ONLINE_STAND_API_QUERY_URL_PATH, params)) {
             if (res->status == 200) {
+                
                 std::istringstream is(res->body, std::ios_base::binary | std::ios_base::in);
 
                 toml::value StandData = toml::parse(is, "std::string");
