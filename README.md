@@ -1,4 +1,4 @@
-<p align="center" style="background: black;"><img src="https://cdn.discordapp.com/attachments/721714238619648101/740926322208931850/VATFrance_WIDE.png" width="auto" style="background: black;"></p>
+<p align="center" style="background: black;"><img src="https://camo.githubusercontent.com/082b8e9e0df5eaa37fcd5320652a8904f5c2dbf05f19879373bc25e108e9deac/68747470733a2f2f76617473696d2e66722f6d656469612f696d672f4672656e6368764143435f4242475f322e706e67" width="auto" style="background: black;"></p>
 
 <p align="center">Repo officiel du plugin EuroScope pour controleurs francais<br>
 <a href="https://vatsim.fr/" target="_blank">https://vatsim.fr/</a>
