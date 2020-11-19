@@ -118,8 +118,10 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 						vz2 = dalt2 * (i / dt2);
 					}
 
-					alt1 += (vz1 / 60) * i;
-					alt2 += (vz2 / 60) * i;
+					if (abs(dalt1) >= 10)
+						alt1 += (vz1 / 60) * i;
+					if (abs(dalt2) >= 10)
+						alt2 += (vz2 / 60) * i;
 				}
 
 				if (ex1.DistanceTo(ex2) < separation_distance &&
