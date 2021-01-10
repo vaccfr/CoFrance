@@ -112,6 +112,7 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 					int vz1 = 0;
 					int vz2 = 0;
 
+
 					if (dt1 > 0 && dt2 > 0)
 					{
 						vz1 = dalt1 * (i / dt1);

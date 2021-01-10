@@ -56,6 +56,9 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 				// Check if any of the other controllers required are online
 				bool DrawText = false;
+				if (v.contains("default"))
+					DrawText = true;
+
 				auto neededControllers = toml::find<vector<string>>(v, "controller_others");
 				for (const auto& c : neededControllers)
 				{
