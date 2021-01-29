@@ -44,6 +44,12 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 		if (strcmp(rt.GetPosition().GetSquawk(), "7000") == 0)
 			continue;
 
+		CFlightPlan rtCorrFp = rt.GetCorrelatedFlightPlan();
+		if (rtCorrFp.IsValid()) {
+			if (rtCorrFp.GetFlightPlanData().GetPlanType()[0] == 'V')
+				continue;
+		}
+
 		if (rt.GetCorrelatedFlightPlan().IsValid())
 		{
 			if (rt.GetCorrelatedFlightPlan().GetFlightPlanData().GetPlanType() == "V")
@@ -65,6 +71,12 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 				&& conflicting.GetPosition().GetPressureAltitude() <= level_reduced_sep)
 			{
 				separation_distance = low_level_sep;
+			}
+
+			CFlightPlan confCorrFp = conflicting.GetCorrelatedFlightPlan();
+			if (confCorrFp.IsValid()) {
+				if (confCorrFp.GetFlightPlanData().GetPlanType()[0] == 'V')
+					continue;
 			}
 
 			if (conflicting.GetPosition().GetRadarFlags() == EuroScopePlugIn::RADAR_POSITION_PRIMARY)
@@ -94,6 +106,7 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 
 			for (int i = 10; i <= time_to_extrapolate; i += 10)
 			{
+
 				CPosition ex1 = Extrapolate(rt.GetPosition().GetPosition(), rt.GetTrackHeading(), rt.GetPosition().GetReportedGS() * 0.000277778 * i);
 				CPosition ex2 = Extrapolate(conflicting.GetPosition().GetPosition(), conflicting.GetTrackHeading(), conflicting.GetPosition().GetReportedGS() * 0.000277778 * i);
 
