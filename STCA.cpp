@@ -44,15 +44,9 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 		if (strcmp(rt.GetPosition().GetSquawk(), "7000") == 0)
 			continue;
 
-		CFlightPlan rtCorrFp = rt.GetCorrelatedFlightPlan();
-		if (rtCorrFp.IsValid()) {
-			if (rtCorrFp.GetFlightPlanData().GetPlanType()[0] == 'V')
-				continue;
-		}
-
 		if (rt.GetCorrelatedFlightPlan().IsValid())
 		{
-			if (rt.GetCorrelatedFlightPlan().GetFlightPlanData().GetPlanType() == "V")
+			if (rt.GetCorrelatedFlightPlan().GetFlightPlanData().GetPlanType()[0] == 'V')
 				continue;
 		}
 
@@ -73,12 +67,6 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 				separation_distance = low_level_sep;
 			}
 
-			CFlightPlan confCorrFp = conflicting.GetCorrelatedFlightPlan();
-			if (confCorrFp.IsValid()) {
-				if (confCorrFp.GetFlightPlanData().GetPlanType()[0] == 'V')
-					continue;
-			}
-
 			if (conflicting.GetPosition().GetRadarFlags() == EuroScopePlugIn::RADAR_POSITION_PRIMARY)
 				continue;
 
@@ -90,7 +78,7 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 
 			if (conflicting.GetCorrelatedFlightPlan().IsValid())
 			{
-				if (conflicting.GetCorrelatedFlightPlan().GetFlightPlanData().GetPlanType() == "V")
+				if (conflicting.GetCorrelatedFlightPlan().GetFlightPlanData().GetPlanType()[0] == 'V')
 					continue;
 			}
 
