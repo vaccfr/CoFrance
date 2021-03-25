@@ -380,6 +380,33 @@ void CoFrancePlugIn::OnTimer(int Counter)
 
     Stca->OnRefresh(this);
     Blink = !Blink;
+
+    // Every 4 seconds send CPDLC data
+    if (Counter % 4 == 0) {
+        if (ControllerMyself().IsValid() && ControllerMyself().IsController()) {
+            string message = "";
+
+            for (CFlightPlan fp = FlightPlanSelectFirst(); fp.IsValid(); fp = FlightPlanSelectNext(fp)) {
+                message += fp.GetCallsign();
+                message += ",";
+                message += fp.GetTrackingControllerIsMe() ? "1" : "0";
+                message += ",";
+                message += fp.GetFlightPlanData().GetOrigin();
+                message += ",";
+                message += fp.GetFlightPlanData().GetDestination();
+                message += ",";
+                
+                for (int k = fp.GetExtractedRoute().GetPointsCalculatedIndex(); k < fp.GetExtractedRoute().GetPointsNumber(); k++) {
+                    message += fp.GetExtractedRoute().GetPointName(k);
+                    message += "-";
+                }
+
+                message += "|";
+            }
+
+            async(&CoFrancePlugIn::SendCPDLCActiveAircrafts, this, string(ControllerMyself().GetCallsign()), message);
+        }
+    }
 }
 
 void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area)
@@ -495,6 +522,31 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading stand api file " + string(exc.what())).c_str(), false, false, false, false, false);
     }
 }
+
+void CoFrancePlugIn::SendCPDLCActiveAircrafts(string my_callsign, string message)
+{
+    try {
+        httplib::Client cli("http://127.0.0.1:9596");
+        httplib::Params params;
+        params.emplace("my_callsign", my_callsign);
+        params.emplace("data", message);
+
+        if (auto res = cli.Post("/api/", params)) {
+            if (res->status == 200) {
+                cli.stop();
+            }
+            else {
+                cli.stop();
+            }
+        }
+
+        cli.stop();
+    }
+    catch (const std::exception& exc) {
+
+    }
+}
+
 
 string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin, string destination, string wtc)
 {

@@ -49,6 +49,8 @@ public:
 
     void LoadConfigFile(bool fromWeb = true);
 
+    void SendCPDLCActiveAircrafts(string my_callsign, string message);
+
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
 
