@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <thread>
 #include <future>
+#include <map>
 #include "STCA.h"
 
 using namespace EuroScopePlugIn;
@@ -49,10 +50,13 @@ public:
 
     void LoadConfigFile(bool fromWeb = true);
 
-    void SendCPDLCActiveAircrafts(string my_callsign, string message);
+    string SendCPDLCActiveAircrafts(string my_callsign, string message);
 
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
+
+    std::future<string> CPDLCAPiData;
+    map<string, int> CPDLCStatusTagMap;
 
     void Log(string s)
     {

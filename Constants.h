@@ -6,7 +6,7 @@
 #include <sstream>
 
 #define MY_PLUGIN_NAME "CoFrance"
-#define MY_PLUGIN_VERSION "1.0"
+#define MY_PLUGIN_VERSION "1.1"
 #define MY_PLUGIN_DEVELOPER "Pierre Ferran"
 #define MY_PLUGIN_COPYRIGHT "GPL v3"
 
@@ -35,6 +35,8 @@ namespace CoFranceTags {
     const int APP_INTENTION = 15;
     const int VZ = 16;
     const int STCA = 17;
+    const int CPDLC_STATUS = 18;
+    const int OCL_FLAG = 19;
 
     const int FUNCTION_CONFLICT_POPUP = 500;
     const int FUNCTION_HANDLE_CONFLICT_GROUP = 501;

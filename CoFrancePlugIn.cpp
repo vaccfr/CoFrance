@@ -44,6 +44,10 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 
     RegisterTagItemType("STCA Indicator", CoFranceTags::STCA);
 
+    RegisterTagItemType("CPDLC Flag", CoFranceTags::CPDLC_STATUS);
+
+    RegisterTagItemType("OCL Flag", CoFranceTags::OCL_FLAG);
+
     RegisterTagItemFunction("Assign Conflict Group", CoFranceTags::FUNCTION_CONFLICT_POPUP);
 
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
@@ -354,6 +358,44 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
             strcpy_s(sItemString, 16, "");
         }
     }
+
+    if (ItemCode == CoFranceTags::OCL_FLAG) {
+        if (!RadarTarget.IsValid())
+            return;
+
+        strcpy_s(sItemString, 16, "");
+    }
+
+    if (ItemCode == CoFranceTags::CPDLC_STATUS) {
+        if (!FlightPlan.IsValid())
+            return;
+
+        if (CPDLCStatusTagMap.find(FlightPlan.GetCallsign()) != CPDLCStatusTagMap.end()) 
+        {
+            // Status is response pending
+            if (CPDLCStatusTagMap[FlightPlan.GetCallsign()] == 1) {
+                *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+
+                auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_departure");
+                *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+            }
+
+            // Status is response negative
+            if (CPDLCStatusTagMap[FlightPlan.GetCallsign()] == 2) {
+                *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+            
+                auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "conflict_group_losange");
+                *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+            }
+            
+            strcpy_s(sItemString, 16, "ß");
+        }
+        else {
+            strcpy_s(sItemString, 16, "");
+        }
+
+    }
+
 }
 
 void CoFrancePlugIn::OnTimer(int Counter)
@@ -378,15 +420,38 @@ void CoFrancePlugIn::OnTimer(int Counter)
         }
     }
 
+    if (CPDLCAPiData.valid() && CPDLCAPiData.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+        string d = CPDLCAPiData.get();
+
+        CPDLCStatusTagMap.clear();
+        std::vector<std::string> row = split(d, '|');
+        for (auto r : row) {
+
+            std::vector<std::string> column = split(r, ',');
+            if (column.size() >= 2) {
+                try {
+                    CPDLCStatusTagMap.insert(make_pair(column[0], stoi(column[1])));
+                }
+                catch (const std::exception& exc) {
+
+                }
+            }
+        }
+    }
+
     Stca->OnRefresh(this);
     Blink = !Blink;
 
-    // Every 4 seconds send CPDLC data
-    if (Counter % 4 == 0) {
+    // Every 5 seconds send CPDLC data
+    if (Counter % 5 == 0) {
         if (ControllerMyself().IsValid() && ControllerMyself().IsController()) {
             string message = "";
 
             for (CFlightPlan fp = FlightPlanSelectFirst(); fp.IsValid(); fp = FlightPlanSelectNext(fp)) {
+
+                if (fp.GetState() == EuroScopePlugIn::FLIGHT_PLAN_STATE_NON_CONCERNED)
+                    continue;
+
                 message += fp.GetCallsign();
                 message += ",";
                 message += fp.GetTrackingControllerIsMe() ? "1" : "0";
@@ -404,7 +469,7 @@ void CoFrancePlugIn::OnTimer(int Counter)
                 message += "|";
             }
 
-            async(&CoFrancePlugIn::SendCPDLCActiveAircrafts, this, string(ControllerMyself().GetCallsign()), message);
+            CPDLCAPiData = async(&CoFrancePlugIn::SendCPDLCActiveAircrafts, this, string(ControllerMyself().GetCallsign()), message);
         }
     }
 }
@@ -523,20 +588,24 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
     }
 }
 
-void CoFrancePlugIn::SendCPDLCActiveAircrafts(string my_callsign, string message)
+string CoFrancePlugIn::SendCPDLCActiveAircrafts(string my_callsign, string message)
 {
+    string r = "null";
+
     try {
         httplib::Client cli("http://127.0.0.1:9596");
+        cli.set_connection_timeout(0, 500000);
+
         httplib::Params params;
         params.emplace("my_callsign", my_callsign);
         params.emplace("data", message);
 
-        if (auto res = cli.Post("/api/", params)) {
+        if (auto res = cli.Post("/api/ping", params)) {
             if (res->status == 200) {
-                cli.stop();
+                return res->body;
             }
             else {
-                cli.stop();
+                r = "null";
             }
         }
 
@@ -545,8 +614,9 @@ void CoFrancePlugIn::SendCPDLCActiveAircrafts(string my_callsign, string message
     catch (const std::exception& exc) {
 
     }
-}
 
+    return r;
+}
 
 string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin, string destination, string wtc)
 {
