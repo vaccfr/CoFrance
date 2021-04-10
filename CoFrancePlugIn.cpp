@@ -494,6 +494,36 @@ void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POI
 
 }
 
+void CoFrancePlugIn::OnFlightPlanControllerAssignedDataUpdate(CFlightPlan FlightPlan, int DataType)
+{
+
+    // Send CPDLC events
+    if (!FlightPlan.IsValid() || !FlightPlan.GetTrackingControllerIsMe())
+        return;
+
+    // FlightPlan is CPDLC enabled
+    if (CPDLCStatusTagMap.find(FlightPlan.GetCallsign()) == CPDLCStatusTagMap.end())
+        return;
+
+    string message = "";
+    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_TEMPORARY_ALTITUDE && FlightPlan.GetControllerAssignedData().GetClearedAltitude() >= 100)
+        message = std::to_string(FlightPlan.GetControllerAssignedData().GetClearedAltitude() / 100);
+    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_DIRECT_TO)
+        message = FlightPlan.GetControllerAssignedData().GetDirectToPointName();
+    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_HEADING && FlightPlan.GetControllerAssignedData().GetAssignedHeading() != 0)
+        message = std::to_string(FlightPlan.GetControllerAssignedData().GetAssignedHeading());
+    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_SQUAWK)
+        message = FlightPlan.GetControllerAssignedData().GetSquawk();
+    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_SPEED)
+        message = std::to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed());
+    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_MACH)
+        message = std::to_string(FlightPlan.GetControllerAssignedData().GetAssignedMach());
+
+    // Send out the event
+    async(&CoFrancePlugIn::SendCPDLCEvent, this, string(FlightPlan.GetCallsign()), DataType, message);
+
+}
+
 void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 {
 
@@ -616,6 +646,32 @@ string CoFrancePlugIn::SendCPDLCActiveAircrafts(string my_callsign, string messa
     }
 
     return r;
+}
+
+string CoFrancePlugIn::SendCPDLCEvent(string ac_callsign, int event_type, string value)
+{
+    try {
+        httplib::Client cli("http://127.0.0.1:9596");
+        cli.set_connection_timeout(0, 500000);
+
+        httplib::Params params;
+        params.emplace("callsign", ac_callsign);
+        params.emplace("event", std::to_string(event_type));
+        params.emplace("value", value);
+
+        if (auto res = cli.Post("/api/event", params)) {
+            if (res->status == 200) {
+                return "ok";
+            }
+        }
+
+        cli.stop();
+    }
+    catch (const std::exception& exc) {
+
+    }
+
+    return "null";
 }
 
 string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin, string destination, string wtc)

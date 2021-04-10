@@ -33,6 +33,8 @@ public:
 
     void OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area);
 
+    void OnFlightPlanControllerAssignedDataUpdate(CFlightPlan FlightPlan, int DataType);
+
     string LoadRemoteStandAssignment(string callsign, string origin, string destination, string wtc);
 
     void OnRadarTargetPositionUpdate(CRadarTarget RadarTarget);
@@ -51,6 +53,8 @@ public:
     void LoadConfigFile(bool fromWeb = true);
 
     string SendCPDLCActiveAircrafts(string my_callsign, string message);
+
+    string SendCPDLCEvent(string ac_callsign, int event_type, string value);
 
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;

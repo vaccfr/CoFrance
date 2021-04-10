@@ -6,7 +6,7 @@
 #include <sstream>
 
 #define MY_PLUGIN_NAME "CoFrance"
-#define MY_PLUGIN_VERSION "1.1"
+#define MY_PLUGIN_VERSION "1.2dev"
 #define MY_PLUGIN_DEVELOPER "Pierre Ferran"
 #define MY_PLUGIN_COPYRIGHT "GPL v3"
 
