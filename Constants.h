@@ -4,9 +4,10 @@
 #include <math.h>
 #include <string>
 #include <sstream>
+#include "nlohmann/json.hpp"
 
 #define MY_PLUGIN_NAME "CoFrance"
-#define MY_PLUGIN_VERSION "1.2dev"
+#define MY_PLUGIN_VERSION "1.3"
 #define MY_PLUGIN_DEVELOPER "Pierre Ferran"
 #define MY_PLUGIN_COPYRIGHT "GPL v3"
 
@@ -41,6 +42,7 @@ namespace CoFranceTags {
     const int FUNCTION_CONFLICT_POPUP = 500;
     const int FUNCTION_HANDLE_CONFLICT_GROUP = 501;
     const int FUNCTION_SEP_TOOL = 502;
+    const int FUNCTION_OCL_TP = 503;
 }
 
 namespace CoFranceCharacters {
@@ -63,14 +65,84 @@ namespace StaticColours {
     const Gdiplus::Color SectorInactive(22, 22, 22);
 }
 
+namespace SharedData {
+    static bool OCLEnabled = true;
+    static nlohmann::json OCLData;
+
+    static auto OCL_Tooltip_timer = std::chrono::system_clock::now();
+    static string OCL_Tooltip_string;
+    static POINT OCL_Tooltip_pt;
+}
+
+static bool HasOCL(string callsign) {
+    try {
+        for (auto d : SharedData::OCLData) {
+            if (d.contains("callsign") && d.contains("status")) {
+                if (d["callsign"] == callsign && d["status"] == "CLEARED")
+                    return true;
+            }
+        }
+    }
+    catch (std::exception& exc) {
+
+    }
+
+    return false;
+}
+
+static int GetOCLLevel(string callsign) {
+    try {
+        for (auto d : SharedData::OCLData) {
+            if (d.contains("callsign") && d.contains("status") && d.contains("level")) {
+                if (d["callsign"] == callsign && d["status"] == "CLEARED")
+                    return std::stoi(d["level"].get<std::string>())*100;
+            }
+        }
+    }
+    catch (std::exception& exc) {
+
+    }
+
+    return 0;
+}
+
+static string GetFullOCL(string callsign) {
+    try {
+        for (auto d : SharedData::OCLData) {
+            if (d.contains("callsign") && d.contains("status") && d.contains("level") && d.contains("fix") && d.contains("mach") && d.contains("extra_info")) {
+                if (d["callsign"] == callsign && d["status"] == "CLEARED")
+                    return string("OCL ") + d["fix"].get<std::string>() + string(" ") + d["level"].get<std::string>() + string(" M")+ d["mach"].get<std::string>() + string(" ") + d["extra_info"].get<std::string>();
+            }
+        }
+    }
+    catch (std::exception& exc) {
+        return "";
+    }
+
+    return "";
+}
+
 const static int ButtonPaddingSides = 5;
 const static int ButtonPaddingTop = 2;
+
+const vector<string> Brest_Oceanic_Points = {"ETIKI", "UMLER", "SEPAL", "BUNAV", "SIVIR"};
 
 inline static bool startsWith(const char* pre, const char* str)
 {
     size_t lenpre = strlen(pre), lenstr = strlen(str);
     return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
 };
+
+static bool StringContainsArray(string str, vector<string> possibilities) {
+    for (auto& c : str) c = toupper(c);
+
+    for (auto p : possibilities) {
+        if (str.find(p) != std::string::npos)
+            return true;
+    }
+
+    return false;
+}
 
 static int roundUp(int numToRound, int multiple)
 {
@@ -159,8 +231,8 @@ static Gdiplus::Point rotatePoint(Gdiplus::Point center, float angle, Gdiplus::P
     float ynew = p.X * s + p.Y * c;
 
     // translate point back:
-    p.X = xnew + center.X;
-    p.Y = ynew + center.Y;
+    p.X = static_cast<int>(xnew) + center.X;
+    p.Y = static_cast<int>(ynew) + center.Y;
     return p;
 }
 

@@ -7,6 +7,7 @@
 #include <future>
 #include <map>
 #include "STCA.h"
+#include "nlohmann/json.hpp"
 
 using namespace EuroScopePlugIn;
 using namespace Gdiplus;
@@ -56,11 +57,16 @@ public:
 
     string SendCPDLCEvent(string ac_callsign, int event_type, string value);
 
+    string LoadOCLData();
+
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
 
     std::future<string> CPDLCAPiData;
     map<string, int> CPDLCStatusTagMap;
+
+    std::future<string> RawOCLData;
+    nlohmann::json OCLData;
 
     void Log(string s)
     {

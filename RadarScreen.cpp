@@ -11,6 +11,10 @@ RadarScreen::~RadarScreen()
 	
 }
 
+void RadarScreen::DrawOCLList(CDC dc) {
+
+}
+
 void RadarScreen::OnRefresh(HDC hDC, int Phase) 
 {
 	Graphics g(hDC);
@@ -116,11 +120,30 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			StartOfMenu.x = r.right;
 			r = this->DrawMenuBarButton(&dc, StartOfMenu, "APP", ApproachMode);
 			AddScreenObject(BUTTON_APPROACH, "", r, false, "");
+			StartOfMenu.x = r.right;
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "OCL", SharedData::OCLEnabled);
+			AddScreenObject(BUTTON_OCL, "", r, false, "");
 
 			for (auto kv : ToAddAcSymbolScreenObject) {
 				AddScreenObject(AC_SYMBOL, kv.first.c_str(), kv.second, false, "");
 			}
+
+			// OCL Tooltip
+			std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - SharedData::OCL_Tooltip_timer;
+			if (elapsed_seconds.count() < 8 && SharedData::OCL_Tooltip_string.size() > 0) {
+				int ddc = dc.SaveDC();
+				CSize TextEx = dc.GetTextExtent(SharedData::OCL_Tooltip_string.c_str());
+				Rect r(SharedData::OCL_Tooltip_pt.x, SharedData::OCL_Tooltip_pt.y, TextEx.cx+2, TextEx.cy + 2);
+
+				Color tooltip_background_colour = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "ocl_tooltip"));
+				
+				g.FillRectangle(&SolidBrush(tooltip_background_colour), r);
+				dc.SetTextColor(RGB(0, 0, 0));
+				dc.TextOutA(SharedData::OCL_Tooltip_pt.x, SharedData::OCL_Tooltip_pt.y, SharedData::OCL_Tooltip_string.c_str());
+				dc.RestoreDC(ddc);
+			}
 		}
+
 
 		// Drawing of AC Symbols and trails
 		if (Phase == EuroScopePlugIn::REFRESH_PHASE_BEFORE_TAGS) {
@@ -151,6 +174,33 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				
 				POINT AcPosPix = ConvertCoordFromPositionToPixel(rt.GetPosition().GetPosition());
 				g.DrawLine(&SepToolDashPen, Point(AcPosPix.x, AcPosPix.y), Point(MousePt.x, MousePt.y));
+
+				// Basic text
+				Point OffsetText = Point(MousePt.x + 50, MousePt.y);
+				dc.SetTextColor(SepToolColour.ToCOLORREF());
+				double distance = rt.GetPosition().GetPosition().DistanceTo(ConvertCoordFromPixelToPosition(MousePt));
+
+				string tp_headingText = padWithZeros(3, (int)rt.GetPosition().GetPosition().DirectionTo(ConvertCoordFromPixelToPosition(MousePt)));
+
+				string tp_distanceText = to_string(distance);
+				size_t tp_decimal_pos = tp_distanceText.find(".");
+				tp_distanceText = tp_distanceText.substr(0, tp_decimal_pos + 2) + "Nm";
+
+				tp_distanceText = tp_distanceText + " " + tp_headingText + "°";
+				
+				dc.TextOutA(OffsetText.X, OffsetText.Y, tp_distanceText.c_str());
+				OffsetText.Y += dc.GetTextExtent(tp_distanceText.c_str()).cy + 5;
+
+				string time = "";
+
+
+				// Calculate time in minutes
+				double timeSeconds = distance * 60 / rt.GetPosition().GetReportedGS();
+				timeSeconds = timeSeconds * 60;
+				time = to_string((int)timeSeconds / 60) + "'" +
+					to_string((int)timeSeconds % 60) + '"';
+
+				dc.TextOutA(OffsetText.X, OffsetText.Y, time.c_str());
 
 				// Angled Pointer Around the mouse
 				Rect MousePointer(Point(MousePt.x-20, MousePt.y-20), Size(40, 40));
@@ -375,8 +425,8 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					RightSide.X = pCoord.X + LengthOfLine / 2;
 					RightSide.Y = pCoord.Y;
 
-					LeftSide = rotatePoint(pCoord, DegToRad(previousPos.GetPosition().DirectionTo(compareToPos)), LeftSide);
-					RightSide = rotatePoint(pCoord, DegToRad(previousPos.GetPosition().DirectionTo(compareToPos)), RightSide);
+					LeftSide = rotatePoint(pCoord, static_cast<float>(DegToRad(previousPos.GetPosition().DirectionTo(compareToPos))), LeftSide);
+					RightSide = rotatePoint(pCoord, static_cast<float>(DegToRad(previousPos.GetPosition().DirectionTo(compareToPos))), RightSide);
 
 					g.DrawLine(&Pen(AcColor), LeftSide, RightSide);
 
@@ -465,6 +515,9 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 
 	if (ObjectType == BUTTON_APPROACH)
 		ApproachMode = !ApproachMode;
+
+	if (ObjectType == BUTTON_OCL)
+		SharedData::OCLEnabled = !SharedData::OCLEnabled;
 
 	if (ObjectType == BUTTON_VV_TIME) {
 		GetPlugIn()->OpenPopupList(Area, "Vecteur Vitesse", 1);

@@ -49,6 +49,7 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
     RegisterTagItemType("OCL Flag", CoFranceTags::OCL_FLAG);
 
     RegisterTagItemFunction("Assign Conflict Group", CoFranceTags::FUNCTION_CONFLICT_POPUP);
+    //RegisterTagItemFunction("Show OCL", CoFranceTags::FUNCTION_OCL_TP);
 
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
@@ -360,10 +361,53 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
     }
 
     if (ItemCode == CoFranceTags::OCL_FLAG) {
-        if (!RadarTarget.IsValid())
+        if (!FlightPlan.IsValid())
             return;
+        string test = FlightPlan.GetFlightPlanData().GetRoute();
+        // if is OCL revelant
+        if (StringContainsArray(test, Brest_Oceanic_Points)) {
+            // Display OCL flag
+            if (HasOCL(FlightPlan.GetCallsign())) {
+                // Check if level change required
 
-        strcpy_s(sItemString, 16, "");
+                int ocl_level = GetOCLLevel(FlightPlan.GetCallsign());
+
+                if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() != ocl_level && ocl_level != 0) {
+                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_departure");
+                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+
+                    string item = "LCHG";
+                    item += std::to_string(ocl_level / 1000);
+
+                    strcpy_s(sItemString, 16, item.c_str());
+                }
+            }
+            else {
+                // If there is no OCL and exit of sector is within 45mins, we display an alert
+                int minutes = 99;
+                for (int i = FlightPlan.GetExtractedRoute().GetPointsCalculatedIndex(); i < FlightPlan.GetExtractedRoute().GetPointsNumber(); i++) {
+                    if (StringContainsArray(FlightPlan.GetExtractedRoute().GetPointName(i), Brest_Oceanic_Points)) {
+                        minutes = FlightPlan.GetExtractedRoute().GetPointDistanceInMinutes(i);
+                        break;
+                    }
+                }
+
+                if (minutes <= 30) {
+                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+
+                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_departure");
+                    if (minutes < 15)
+                        element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "sep_warning");
+
+                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+                    strcpy_s(sItemString, 16, "OCL");
+                }
+            }
+        }
+        else {
+            strcpy_s(sItemString, 16, "");
+        }
     }
 
     if (ItemCode == CoFranceTags::CPDLC_STATUS) {
@@ -439,10 +483,21 @@ void CoFrancePlugIn::OnTimer(int Counter)
         }
     }
 
+    if (RawOCLData.valid() && RawOCLData.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+        string d = RawOCLData.get();
+
+        try {
+            SharedData::OCLData = nlohmann::json::parse(d);
+        }
+        catch (std::exception &exc) {
+
+        }
+    }
+
     Stca->OnRefresh(this);
     Blink = !Blink;
 
-    // Every 5 seconds send CPDLC data
+    // Every 5 seconds send CPDLC data and poll OCL data
     if (Counter % 5 == 0) {
         if (ControllerMyself().IsValid() && ControllerMyself().IsController()) {
             string message = "";
@@ -460,16 +515,41 @@ void CoFrancePlugIn::OnTimer(int Counter)
                 message += ",";
                 message += fp.GetFlightPlanData().GetDestination();
                 message += ",";
+
+
                 
                 for (int k = fp.GetExtractedRoute().GetPointsCalculatedIndex(); k < fp.GetExtractedRoute().GetPointsNumber(); k++) {
                     message += fp.GetExtractedRoute().GetPointName(k);
-                    message += "-";
+                    if (k+1 != fp.GetExtractedRoute().GetPointsNumber())
+                        message += "-";
+                }
+
+                message += ",";
+
+                CController NextController = ControllerSelect(fp.GetCoordinatedNextController());
+                if (NextController.IsValid()) {
+                    message += std::to_string(NextController.GetPrimaryFrequency());
+                    message += ",";
+                    message += NextController.GetCallsign();
+                    message += ",";
+                }
+                else {
+                    message += ",";
+                    message += ",";
                 }
 
                 message += "|";
             }
 
             CPDLCAPiData = async(&CoFrancePlugIn::SendCPDLCActiveAircrafts, this, string(ControllerMyself().GetCallsign()), message);
+
+            //
+            // Polling OCL
+            // 
+
+            if (SharedData::OCLEnabled) {
+                RawOCLData = async(&CoFrancePlugIn::LoadOCLData, this);
+            }
         }
     }
 }
@@ -490,6 +570,20 @@ void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POI
             ConflictGroups.erase(FlightPlanSelectASEL().GetCallsign());
         else if (strcmp(sItemString, "Remove") != 0)
             ConflictGroups[FlightPlanSelectASEL().GetCallsign()] = sItemString;
+    }
+
+    if (FunctionId == CoFranceTags::FUNCTION_OCL_TP) {
+        CFlightPlan fp = FlightPlanSelectASEL();
+        auto t = fp.GetCallsign();
+        if (!fp.IsValid())
+            return;
+
+        SharedData::OCL_Tooltip_timer = std::chrono::system_clock::now();
+
+        if (HasOCL(fp.GetCallsign())) {
+            SharedData::OCL_Tooltip_string = GetFullOCL(fp.GetCallsign());
+            SharedData::OCL_Tooltip_pt = Pt;
+        }
     }
 
 }
@@ -632,6 +726,7 @@ string CoFrancePlugIn::SendCPDLCActiveAircrafts(string my_callsign, string messa
 
         if (auto res = cli.Post("/api/ping", params)) {
             if (res->status == 200) {
+                cli.stop();
                 return res->body;
             }
             else {
@@ -661,6 +756,7 @@ string CoFrancePlugIn::SendCPDLCEvent(string ac_callsign, int event_type, string
 
         if (auto res = cli.Post("/api/event", params)) {
             if (res->status == 200) {
+                cli.stop();
                 return "ok";
             }
         }
@@ -708,4 +804,30 @@ string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin,
     }
 
     return "NoGate";
+}
+
+string CoFrancePlugIn::LoadOCLData()
+{
+    try {
+        httplib::Client cli("https://nattrak.vatsim.net");
+        cli.set_connection_timeout(0, 500000);
+
+        if (auto res = cli.Get("/pluginapi.php")) {
+            if (res->status == 200) {
+                cli.stop();
+                return res->body;
+            }
+            else {
+                cli.stop();
+                return "{}";
+            }
+        }
+
+        cli.stop();
+    }
+    catch (const std::exception& exc) {
+        return "";
+    }
+
+    return "";
 }

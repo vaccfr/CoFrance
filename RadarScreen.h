@@ -20,6 +20,8 @@ public:
 	RadarScreen(CoFrancePlugIn* CoFrancepluginInstance);
 	~RadarScreen();
 
+	void DrawOCLList(CDC dc);
+
 	CoFrancePlugIn* CoFrancepluginInstance;
 	int Filter_Upper = 99999;
 	int Filter_Lower = 0;
@@ -54,12 +56,15 @@ public:
 	int BUTTON_VV = 954;
 	int BUTTON_VV_TIME = 955;
 	int BUTTON_APPROACH = 956;
+	int BUTTON_OCL = 957;
 
 	int FUNCTION_SET_VV_TIME = 785;
 	int FUNCTION_SET_LOWER_FILTER = 787;
 	int FUNCTION_SET_HIGHER_FILTER = 788;
 
 	POINT MousePt;
+
+	
 
 	//---OnRefresh------------------------------------------------------
 
