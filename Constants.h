@@ -7,7 +7,7 @@
 #include "nlohmann/json.hpp"
 
 #define MY_PLUGIN_NAME "CoFrance"
-#define MY_PLUGIN_VERSION "1.3"
+#define MY_PLUGIN_VERSION "1.4dev"
 #define MY_PLUGIN_DEVELOPER "Pierre Ferran"
 #define MY_PLUGIN_COPYRIGHT "GPL v3"
 
@@ -38,11 +38,20 @@ namespace CoFranceTags {
     const int STCA = 17;
     const int CPDLC_STATUS = 18;
     const int OCL_FLAG = 19;
+    const int ASSIGNED_SPEED = 20;
 
     const int FUNCTION_CONFLICT_POPUP = 500;
     const int FUNCTION_HANDLE_CONFLICT_GROUP = 501;
     const int FUNCTION_SEP_TOOL = 502;
     const int FUNCTION_OCL_TP = 503;
+    const int FUNCTION_OPEN_ASP = 504;
+
+    const int FUNCTION_ASP_TOOL_MIN = 901;
+    const int FUNCTION_ASP_TOOL_MAX = 902;
+
+    const int FUNCTION_ASP_TOOL_LIST = 903;
+    const int FUNCTION_ASP_TOOL_TOGGLE_M = 904;
+    const int FUNCTION_ASP_TOOL_RESUME = 905;
 }
 
 namespace CoFranceCharacters {
@@ -63,6 +72,12 @@ namespace StaticColours {
 
     const Gdiplus::Color SectorActive(4, 7, 14);
     const Gdiplus::Color SectorInactive(22, 22, 22);
+
+    const Gdiplus::Color ListBackground(43, 51, 54);
+    const Gdiplus::Color ListForeground(0, 0, 0);
+
+    const Gdiplus::Color SelectListBackground(32, 61, 64);
+    const Gdiplus::Color SelectActiveListBackground(105, 180, 211);
 }
 
 namespace SharedData {
@@ -143,6 +158,41 @@ static bool StringContainsArray(string str, vector<string> possibilities) {
 
     return false;
 }
+
+static Gdiplus::GraphicsPath* RoundedRect(Gdiplus::Rect bounds, int radius)
+{
+    int diameter = radius * 2;
+    Gdiplus::Size size = Gdiplus::Size(diameter, diameter);
+    Gdiplus::Point pt;
+    bounds.GetLocation(&pt);
+    Gdiplus::Rect arc = Gdiplus::Rect(pt, size);
+    Gdiplus::GraphicsPath* path = new Gdiplus::GraphicsPath();
+
+    // top left arc 
+    path->AddArc(arc, 180, 90);
+
+    // top right arc  
+    arc.X = bounds.GetRight() - diameter;
+    path->AddArc(arc, 270, 90);
+
+    // bottom right arc  
+    arc.Y = bounds.GetBottom() - diameter;
+    path->AddArc(arc, 0, 90);
+
+    // bottom left arc 
+    arc.X = bounds.GetLeft();
+    path->AddArc(arc, 90, 90);
+
+    path->CloseFigure();
+
+    return path;
+}
+
+static int DrawCenteredText(CDC* dc, POINT Center, string s) {
+    CSize cs = dc->GetTextExtent(s.c_str());
+    dc->TextOutA(Center.x - cs.cx / 2, Center.y, s.c_str());
+    return cs.cy;
+};
 
 static int roundUp(int numToRound, int multiple)
 {

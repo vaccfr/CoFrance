@@ -142,8 +142,28 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				dc.TextOutA(SharedData::OCL_Tooltip_pt.x, SharedData::OCL_Tooltip_pt.y, SharedData::OCL_Tooltip_string.c_str());
 				dc.RestoreDC(ddc);
 			}
+
+
 		}
 
+		if (Phase == EuroScopePlugIn::REFRESH_PHASE_AFTER_LISTS) {
+			int svDc = dc.SaveDC();
+
+			CFont* pOldFont = dc.GetCurrentFont();
+			LOGFONT logFont;
+			pOldFont->GetLogFont(&logFont);
+			logFont.lfHeight = 15;
+			CFont font;
+			font.CreateFontIndirect(&logFont);
+
+			dc.SelectObject(&font);
+
+			// ASP Popup
+			if (aspPopup.active_ac.length() > 0)
+				aspPopup.Draw(&g, &dc, this, MousePt);
+
+			dc.RestoreDC(svDc);
+		}
 
 		// Drawing of AC Symbols and trails
 		if (Phase == EuroScopePlugIn::REFRESH_PHASE_BEFORE_TAGS) {
@@ -380,14 +400,19 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				// We also displayed speed vectors if turned on
 				if (this->CoFrancepluginInstance->ConflictGroups.find(CorrFp.GetCallsign()) != this->CoFrancepluginInstance->ConflictGroups.end() || EnableVV) {
 					
-					CPosition EndOfLine = Extrapolate(radarTarget.GetPosition().GetPosition(), radarTarget.GetTrackHeading(), radarTarget.GetPosition().GetReportedGS() * 0.0166667 * VV_Minutes);
+					for (int v = 0; v < VV_Minutes; v++) {
 
-					POINT ptRad = ConvertCoordFromPositionToPixel(radarTarget.GetPosition().GetPosition());
-					Point pAcPosition(ptRad.x, ptRad.y);
-					POINT PtEndOfLine = ConvertCoordFromPositionToPixel(EndOfLine);
-					Point pEndOfLinePt(PtEndOfLine.x, PtEndOfLine.y);
+						CPosition StartOfLine = Extrapolate(radarTarget.GetPosition().GetPosition(), radarTarget.GetTrackHeading(), radarTarget.GetPosition().GetReportedGS() * 0.0166667 * (((double)v)+0.08));
 
-					g.DrawLine(&Pen(AcColor, 1.5f), pAcPosition, pEndOfLinePt);
+						CPosition EndOfLine = Extrapolate(radarTarget.GetPosition().GetPosition(), radarTarget.GetTrackHeading(), radarTarget.GetPosition().GetReportedGS() * 0.0166667 * (v+1));
+
+						POINT ptRad = ConvertCoordFromPositionToPixel(StartOfLine);
+						Point pAcPosition(ptRad.x, ptRad.y);
+						POINT PtEndOfLine = ConvertCoordFromPositionToPixel(EndOfLine);
+						Point pEndOfLinePt(PtEndOfLine.x, PtEndOfLine.y);
+
+						g.DrawLine(&Pen(AcColor, 1.5f), pAcPosition, pEndOfLinePt);
+					}
 				}
 
 				// We can now draw the ac symbol
@@ -496,6 +521,10 @@ void RadarScreen::OnAsrContentLoaded(bool Loaded)
 
 void RadarScreen::OnOverScreenObject(int ObjectType, const char* sObjectId, POINT Pt, RECT Area)
 {
+	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_LIST) {
+		aspPopup.hovered_item = sObjectId;
+	}
+
 	MousePt = Pt;
 	RequestRefresh();
 }
@@ -518,6 +547,63 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 
 	if (ObjectType == BUTTON_OCL)
 		SharedData::OCLEnabled = !SharedData::OCLEnabled;
+
+	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_MAX) {
+		aspPopup.max_active = !aspPopup.max_active;
+		aspPopup.min_active = false;
+	}
+
+	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_MIN) {
+		aspPopup.min_active = !aspPopup.min_active;
+		aspPopup.max_active = false;
+	}
+
+	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_TOGGLE_M) {
+		aspPopup.hovered_item = "";
+		aspPopup.is_mach = !aspPopup.is_mach;
+	}
+
+	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_RESUME) {
+		CFlightPlan fp = GetPlugIn()->FlightPlanSelect(aspPopup.active_ac.c_str());
+
+		if (!fp.IsValid())
+			return;
+
+		if (fp.GetTrackingControllerIsMe()) {
+			fp.GetControllerAssignedData().SetAssignedMach(0);
+			fp.GetControllerAssignedData().SetAssignedSpeed(0);
+		}
+
+		aspPopup.Reset();
+	}
+
+	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_LIST) {
+		CFlightPlan fp = GetPlugIn()->FlightPlanSelect(aspPopup.active_ac.c_str());
+
+		if (!fp.IsValid())
+			return;
+
+		if (fp.GetTrackingControllerIsMe()) {
+			if (aspPopup.is_mach) {
+				int selected = stoi(sObjectId);
+				if (aspPopup.max_active)
+					fp.GetControllerAssignedData().SetAssignedSpeed(2);
+				if (aspPopup.min_active)
+					fp.GetControllerAssignedData().SetAssignedSpeed(1);
+				fp.GetControllerAssignedData().SetAssignedMach(selected);
+			}
+			else {
+				int selected = stoi(sObjectId);
+				if (aspPopup.max_active)
+					selected--;
+				if (aspPopup.min_active)
+					selected++;
+				fp.GetControllerAssignedData().SetAssignedSpeed(selected);
+			}
+		}
+
+		aspPopup.Reset();
+	}
 
 	if (ObjectType == BUTTON_VV_TIME) {
 		GetPlugIn()->OpenPopupList(Area, "Vecteur Vitesse", 1);
@@ -581,4 +667,11 @@ void RadarScreen::OnFunctionCall(int FunctionId, const char* sItemString, POINT 
 	if (FunctionId == FUNCTION_SET_HIGHER_FILTER) {
 		Filter_Upper = atoi(sItemString) * 100;
 	}
+
+	if (FunctionId == CoFranceTags::FUNCTION_OPEN_ASP) {
+		aspPopup.Reset();
+		aspPopup.active_ac = GetPlugIn()->FlightPlanSelectASEL().GetCallsign();
+		aspPopup.Center = Point(Pt.x, Pt.y);
+	}
+
 }

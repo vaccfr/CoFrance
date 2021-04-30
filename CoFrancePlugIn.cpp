@@ -48,8 +48,12 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 
     RegisterTagItemType("OCL Flag", CoFranceTags::OCL_FLAG);
 
+    RegisterTagItemType("Assigned Speed", CoFranceTags::ASSIGNED_SPEED);
+
     RegisterTagItemFunction("Assign Conflict Group", CoFranceTags::FUNCTION_CONFLICT_POPUP);
     //RegisterTagItemFunction("Show OCL", CoFranceTags::FUNCTION_OCL_TP);
+
+    RegisterTagItemFunction("Open ASP Popup", CoFranceTags::FUNCTION_OPEN_ASP);
 
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
@@ -122,6 +126,30 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
         DetailedAircraft = RadarTarget.GetCallsign();
 
         strcpy_s(sItemString, 16, "");
+    }
+
+    if (ItemCode == CoFranceTags::ASSIGNED_SPEED) {
+        string aspeed = "";
+        if (FlightPlan.GetControllerAssignedData().GetAssignedMach() != 0) {
+            aspeed = "m";
+
+            aspeed += "." + to_string(FlightPlan.GetControllerAssignedData().GetAssignedMach());
+            if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() == 2)
+                aspeed += "+";
+            if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() == 1)
+                aspeed += "-";
+        } else if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() != 0) {
+            aspeed = "k";
+            if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() % 10 == 1)
+                aspeed += to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed() - 1) + "+";
+            else if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() % 10 == 9)
+                aspeed += to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed() + 1) + "-";
+            else
+                aspeed += to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed());
+
+        }
+
+        strcpy_s(sItemString, 16, aspeed.c_str());
     }
 
     if (ItemCode == CoFranceTags::DUMMY_TAGGED) {

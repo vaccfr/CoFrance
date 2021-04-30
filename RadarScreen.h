@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "CoFrancePlugIn.h"
 #include "VERA.h"
+#include "PopupSpeedAssign.h"
 
 
 using namespace Gdiplus;
@@ -64,6 +65,7 @@ public:
 
 	POINT MousePt;
 
+	PopupSpeedAssign aspPopup;
 	
 
 	//---OnRefresh------------------------------------------------------
@@ -146,7 +148,7 @@ public:
 
 	void FillInAltitudeList(CPlugIn* Plugin, int FunctionId, int Current) {
 		Plugin->AddPopupListElement(" 999 ", "", FunctionId, Current == 99999);
-		for (int i = 410; i >= 0; i -= 10)
+		for (int i = 415; i >= 0; i -= 10)
 			Plugin->AddPopupListElement(string(string(" ") + to_string(i) + string(" ")).c_str(), "", FunctionId, Current / 100 == i);
 	};
 

@@ -209,6 +209,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PopupSpeedAssign.h" />
     <ClInclude Include="RadarScreen.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="STCA.h" />

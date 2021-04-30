@@ -71,6 +71,9 @@
     <ClInclude Include="STCA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PopupSpeedAssign.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CoFrance.rc">
