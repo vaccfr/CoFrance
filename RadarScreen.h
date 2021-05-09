@@ -9,6 +9,7 @@
 #include "CoFrancePlugIn.h"
 #include "VERA.h"
 #include "PopupSpeedAssign.h"
+#include "DYPWindow.h"
 
 
 using namespace Gdiplus;
@@ -66,6 +67,7 @@ public:
 	POINT MousePt;
 
 	PopupSpeedAssign aspPopup;
+	DYPWindow dyp;
 	
 
 	//---OnRefresh------------------------------------------------------
@@ -77,6 +79,8 @@ public:
 	void OnAsrContentToBeSaved();
 
 	void OnAsrContentLoaded(bool Loaded);
+
+	void OnMoveScreenObject(int ObjectType, const char* sObjectId, POINT Pt, RECT Area, bool Released);
 
 	void DrawFixedSizedText(Graphics* g, CPosition TextPosition, int Size, string text, Color c) {
 		

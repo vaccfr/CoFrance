@@ -162,6 +162,9 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			if (aspPopup.active_ac.length() > 0)
 				aspPopup.Draw(&g, &dc, this, MousePt);
 
+			dyp.active_ac = GetPlugIn()->FlightPlanSelectASEL().GetCallsign();
+			dyp.Draw(&g, &dc, this, MousePt);
+
 			dc.RestoreDC(svDc);
 		}
 
@@ -519,10 +522,30 @@ void RadarScreen::OnAsrContentLoaded(bool Loaded)
 		VV_Minutes = stoi(j_value);
 }
 
+void RadarScreen::OnMoveScreenObject(int ObjectType, const char* sObjectId, POINT Pt, RECT Area, bool Released)
+{
+	if (ObjectType == DYPWindow::DRAW_DYP_WINDOW) {
+		dyp.TopLeft = Point(Area.left, Area.top);
+	}
+
+	MousePt = Pt;
+	RequestRefresh();
+}
+
 void RadarScreen::OnOverScreenObject(int ObjectType, const char* sObjectId, POINT Pt, RECT Area)
 {
 	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_LIST) {
 		aspPopup.hovered_item = sObjectId;
+	}
+
+	if (ObjectType == DYPWindow::FUNC_DYP_WINDOW_TABS) {
+		if (string(sObjectId) == string("principal")) {
+			dyp.hovered_tab = DYPWindow::Tabs::PRINCIPAL;
+		}
+
+		if (string(sObjectId) == string("ocl")) {
+			dyp.hovered_tab = DYPWindow::Tabs::OCL;
+		}
 	}
 
 	MousePt = Pt;
@@ -561,6 +584,16 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_TOGGLE_M) {
 		aspPopup.hovered_item = "";
 		aspPopup.is_mach = !aspPopup.is_mach;
+	}
+
+	if (ObjectType == DYPWindow::FUNC_DYP_WINDOW_TABS) {
+		if (string(sObjectId) == string("principal")) {
+			dyp.active_tab = DYPWindow::Tabs::PRINCIPAL;
+		}
+
+		if (string(sObjectId) == string("ocl")) {
+			dyp.active_tab = DYPWindow::Tabs::OCL;
+		}
 	}
 
 	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_RESUME) {

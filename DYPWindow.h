@@ -3,39 +3,33 @@
 #include <string>
 #include "Constants.h"
 
-class PopupSpeedAssign {
+class DYPWindow {
 protected:
-	const static int WIDTH = 100;
-	const static int HEIGHT = 8 * 20 + 50 + 20 + 20 + 20 + 25;
+	const static int WIDTH = 650;
+	const static int HEIGHT = 20 + 15 + 20 + 40 + 25;
 
 	bool initialise = true;
-
 public:
-	std::chrono::system_clock::time_point LeftAt;
 
-	bool min_active = false;
-	bool max_active = false;
+	const static int DRAW_DYP_WINDOW = 1001;
+	const static int FUNC_DYP_WINDOW_TABS = 1201;
+	Gdiplus::Point TopLeft = {200, 400};
+	
+	enum Tabs { PRINCIPAL, ROUTE, OCL, MISC };
 
-	bool is_mach = false;
-
-	string hovered_item = "";
+	Tabs active_tab = PRINCIPAL;
+	Tabs hovered_tab = PRINCIPAL;
 	string active_ac = "";
 
 
-	Gdiplus::Point Center = Point(200, 400);
-
 	inline void Reset() {
 		active_ac = "";
-		min_active = false;
-		max_active = false;
-		hovered_item = "";
-		LeftAt = std::chrono::system_clock::now();
-		is_mach = false;
 		initialise = true;
 	};
 
 	inline void Draw(Gdiplus::Graphics* g, CDC* dc, CRadarScreen* radar, POINT MousePt) {
 		int svDc = dc->SaveDC();
+		dc->SetTextColor(RGB(255, 255, 255));
 		int y_Cursor = 0;
 
 
@@ -44,65 +38,166 @@ public:
 		if (!fp.IsValid())
 			return;
 
+		g->FillRectangle(&SolidBrush(StaticColours::ListBackground), Rect(TopLeft, Size(WIDTH, HEIGHT)));
+		g->DrawRectangle(&Pen(StaticColours::ListForeground), Rect(TopLeft, Size(WIDTH, HEIGHT)));
 
-		if (initialise) {
-			if (fp.GetCorrelatedRadarTarget().IsValid() && fp.GetCorrelatedRadarTarget().GetPosition().GetPressureAltitude() >= 28000) {
-				is_mach = true;
+		y_Cursor = 20;
+		g->FillRectangle(&HatchBrush(HatchStyle::HatchStyleDarkUpwardDiagonal, StaticColours::ListForeground, StaticColours::ListBackground), Rect(TopLeft, Size(WIDTH, y_Cursor)));
+		dc->TextOutA(TopLeft.X+4, TopLeft.Y+4, "DyP Info");
+
+		radar->AddScreenObject(DRAW_DYP_WINDOW, "", CRect({ TopLeft.X, TopLeft.Y }, CSize(WIDTH, HEIGHT)), true, "");
+
+		// Tabs
+		CSize measureSize = dc->GetTextExtent("ABC1111 FRANCE SOLEIL");
+		if (active_tab == PRINCIPAL || hovered_tab == PRINCIPAL) {
+			measureSize = dc->GetTextExtent("PRINCIPAL");
+			g->FillRectangle(&SolidBrush(StaticColours::ListForeground), Rect(Point(TopLeft.X + 4, TopLeft.Y + 4 + y_Cursor), Size(measureSize.cx, measureSize.cy)));
+		}
+
+		if (active_tab == ROUTE || hovered_tab == ROUTE) {
+			measureSize = dc->GetTextExtent("PRINCIPAL ");
+			CSize measureSize2 = dc->GetTextExtent("ROUTE");
+			g->FillRectangle(&SolidBrush(StaticColours::ListForeground), Rect(Point(TopLeft.X + 4 + measureSize.cx, TopLeft.Y + 4 + y_Cursor), Size(measureSize2.cx, measureSize2.cy)));
+		}
+		 
+		if (active_tab == OCL || hovered_tab == OCL) {
+			measureSize = dc->GetTextExtent("PRINCIPAL ROUTE ");
+			CSize measureSize2 = dc->GetTextExtent("OCL");
+			g->FillRectangle(&SolidBrush(StaticColours::ListForeground), Rect(Point(TopLeft.X + 4 + measureSize.cx, TopLeft.Y + 4 + y_Cursor), Size(measureSize2.cx, measureSize2.cy)));
+		}
+
+		// Add the screen objects for click
+		measureSize = dc->GetTextExtent("PRINCIPAL");
+		radar->AddScreenObject(FUNC_DYP_WINDOW_TABS, "principal", CRect({ TopLeft.X + 4, TopLeft.Y + 4 + y_Cursor }, measureSize), false, "");
+
+		measureSize = dc->GetTextExtent("PRINCIPAL ROUTE ");
+		CSize measureSize2 = dc->GetTextExtent("OCL");
+		radar->AddScreenObject(FUNC_DYP_WINDOW_TABS, "ocl", CRect({ TopLeft.X + 4 + measureSize.cx, TopLeft.Y + 4 + y_Cursor }, measureSize2), false, "");
+		
+
+		dc->TextOutA(TopLeft.X + 4, TopLeft.Y + 4 + y_Cursor, "PRINCIPAL ROUTE OCL MISC");
+		y_Cursor += 20;
+
+
+
+		// Callsign and company and first set of information
+		g->DrawLine(&Pen(Gdiplus::Color::Black), Point(TopLeft.X, TopLeft.Y + y_Cursor), Point(TopLeft.X + WIDTH, TopLeft.Y + y_Cursor));
+
+		string s = fp.GetCallsign();
+		s += " company";
+		dc->TextOutA(TopLeft.X + 4, TopLeft.Y + 4 + y_Cursor, s.c_str());
+		measureSize = dc->GetTextExtent("ABC1111 FRANCE SOLEIL"); 
+
+		s = string(fp.GetControllerAssignedData().GetSquawk()) + " pssr sts";
+		s += "    x1   " + string(fp.GetFlightPlanData().GetAircraftFPType()) + " /" + fp.GetFlightPlanData().GetAircraftWtc() + " K0" + to_string(fp.GetFlightPlanData().GetTrueAirspeed());
+		
+		// special flags
+		if (!fp.GetFlightPlanData().IsRvsm())
+			s += "      noW";
+
+
+		dc->TextOutA(TopLeft.X + 4 + measureSize.cx, TopLeft.Y + 4 + y_Cursor, s.c_str());
+
+		// Vertical sep
+
+		y_Cursor += 20;
+
+		// Main data area
+		g->FillRectangle(&SolidBrush(StaticColours::ListLightForeground), Rect(Point(TopLeft.X+1, TopLeft.Y + y_Cursor), Size(WIDTH-2, 40)));
+		g->DrawLine(&Pen(Gdiplus::Color::Black), Point(TopLeft.X, TopLeft.Y + y_Cursor), Point(TopLeft.X + WIDTH, TopLeft.Y + y_Cursor));
+
+		if (active_tab == Tabs::PRINCIPAL) {
+			string line0 = "";
+			if (string(fp.GetEntryCoordinationPointName()).size() > 0) {
+				line0 += string(fp.GetEntryCoordinationPointName()) + " ";
+				line0 += to_string(fp.GetEntryCoordinationAltitude() / 100);
+			}
+			else {
+				line0 += "copn efl";
 			}
 
-			int aspeed = fp.GetControllerAssignedData().GetAssignedSpeed();
+			line0 += "  " + string(fp.GetFlightPlanData().GetOrigin()) + " " + string(fp.GetFlightPlanData().GetDestination()) + "  " + to_string(fp.GetFlightPlanData().GetFinalAltitude()/100)+"    ";
 
-			if (aspeed == 1)
-				min_active = true;
+			// We then show the next 3 sectors
+			string id = "";
+			int k = 0;
+			CFlightPlanPositionPredictions PosPred = fp.GetPositionPredictions();
+			for (int i = 0; i < PosPred.GetPointsNumber(); i++) {
 
-			if (aspeed == 2)
-				max_active = true;
+				// New controller, add it
+				if (id != PosPred.GetControllerId(i) && PosPred.GetControllerId(i) != "--") {
 
-			if (aspeed != 0 && aspeed % 10 == 9)
-				max_active = true;
+					line0 += string(PosPred.GetControllerId(i)) + " " + to_string(PosPred.GetAltitude(i) / 100) + "   ";
 
-			if (aspeed != 0 && aspeed % 10 == 1)
-				min_active = true;
+					id = PosPred.GetControllerId(i);
+					k++;
+					if (k >= 4)
+						break;
+				}
 
-			initialise = false;
-		}
-
-
-		int Tendency = 0;
-		if (fp.GetCorrelatedRadarTarget().GetVerticalSpeed() > 100)
-			Tendency = 1;
-		if (fp.GetCorrelatedRadarTarget().GetVerticalSpeed() < 100)
-			Tendency = -1;
-
-		int perf_mach = fp.GetFlightPlanData().PerformanceGetMach(fp.GetCorrelatedRadarTarget().GetPosition().GetPressureAltitude(), Tendency);
-		int perf_ias = fp.GetFlightPlanData().PerformanceGetIas(fp.GetCorrelatedRadarTarget().GetPosition().GetPressureAltitude(), Tendency);
-
-		Gdiplus::Point TopRight = Gdiplus::Point(Center.X - PopupSpeedAssign::WIDTH / 2, Center.Y - PopupSpeedAssign::HEIGHT / 2);
-
-
-		if (IsInRect(MousePt, CRect({ TopRight.X, TopRight.Y }, CSize(HEIGHT, WIDTH)))) {
-			LeftAt = std::chrono::system_clock::now();
-		}
-		else {
-			std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - LeftAt;
-			if (elapsed_seconds.count() > 6) {
-				active_ac = "";
-				Reset();
-				return;
 			}
 
+			dc->TextOutA(TopLeft.X + 4, TopLeft.Y + 4 + y_Cursor, line0.c_str());
+
+			string line0end = "";
+			if (string(fp.GetExitCoordinationPointName()).size() > 0) {
+				line0end += string(fp.GetExitCoordinationPointName()) + " ";
+				line0end += to_string(fp.GetExitCoordinationAltitude() / 100);
+			}
+			else {
+				line0end += "copx xfl";
+			}
+			measureSize = dc->GetTextExtent("line0end");
+			dc->TextOutA(TopLeft.X + WIDTH - 4 - measureSize.cx, TopLeft.Y + 4 + y_Cursor, line0end.c_str());
+
+			
 		}
 
-		int x_Center = TopRight.X + WIDTH / 2;
+		if (active_tab == Tabs::ROUTE) {
 
-		g->FillRectangle(&SolidBrush(StaticColours::ListBackground), Rect(TopRight, Size(WIDTH, HEIGHT)));
-		g->DrawRectangle(&Pen(StaticColours::ListForeground), Rect(TopRight, Size(WIDTH, HEIGHT)));
+		}
 
-		y_Cursor = 35;
-		g->FillRectangle(&HatchBrush(HatchStyle::HatchStyleDarkUpwardDiagonal, StaticColours::ListForeground, StaticColours::ListBackground), Rect(TopRight, Size(WIDTH, y_Cursor)));
+		if (active_tab == Tabs::OCL) {
+			string line0 = "no OCL";
+			if (HasOCL(fp.GetCallsign())) {
+				line0 = GetFullOCL(fp.GetCallsign());
+			}
 
-		y_Cursor = 2;
-		dc->SetTextColor(COLORREF(RGB(209, 209, 209)));
+			dc->TextOutA(TopLeft.X + 4, TopLeft.Y + 4 + y_Cursor, line0.c_str());
+		}
+		
+
+		y_Cursor += 40;
+		g->DrawLine(&Pen(Gdiplus::Color::Black), Point(TopLeft.X, TopLeft.Y + y_Cursor), Point(TopLeft.X + WIDTH, TopLeft.Y + y_Cursor));
+
+		// Bottom area
+
+		s = string(fp.GetTrackingControllerId()) + "  " + to_string(radar->GetPlugIn()->ControllerSelectByPositionId(fp.GetTrackingControllerId()).GetPrimaryFrequency()).substr(0, 7);
+		if (string(fp.GetTrackingControllerId()).size() == 0)
+			s = "cs  cs---.---";
+		dc->TextOutA(TopLeft.X + 4, TopLeft.Y + 4 + y_Cursor, s.c_str());
+		measureSize = dc->GetTextExtent("EURW  111.111   ");
+
+
+		s = "@"+string(fp.GetCallsign())+" @"+string(fp.GetCorrelatedRadarTarget().GetPosition().GetSquawk())+" @h"+ padWithZeros(3, (int)fmod(fp.GetCorrelatedRadarTarget().GetPosition().GetReportedHeading(), 360));
+		dc->TextOutA(TopLeft.X + 4 + measureSize.cx, TopLeft.Y + 4 + y_Cursor, s.c_str());
+		measureSize = dc->GetTextExtent("@ABC1111 @1000                       ");
+
+		s = "optext";
+		if (string(fp.GetControllerAssignedData().GetScratchPadString()).size() > 0)
+			s = string(fp.GetControllerAssignedData().GetScratchPadString()).substr(0, 40);
+		dc->TextOutA(TopLeft.X + 4 + measureSize.cx, TopLeft.Y + 4 + y_Cursor, s.c_str());
+		
+
+		CController ns = radar->GetPlugIn()->ControllerSelect(fp.GetCoordinatedNextController());
+		s = string(ns.GetPositionId()) + "  " + to_string(ns.GetPrimaryFrequency()).substr(0, 7);
+		if (string(ns.GetPositionId()).size() == 0)
+			s = "ns  ns---.---";
+
+		measureSize = dc->GetTextExtent(s.c_str());
+		dc->TextOutA(TopLeft.X + WIDTH - 4 - measureSize.cx, TopLeft.Y + 4 + y_Cursor, s.c_str());
+
+		/*dc->SetTextColor(COLORREF(RGB(209, 209, 209)));
 		y_Cursor += DrawCenteredText(dc, { x_Center , TopRight.Y + y_Cursor }, "ASP");
 		y_Cursor += DrawCenteredText(dc, { x_Center , TopRight.Y + y_Cursor }, fp.GetCallsign());
 
@@ -208,7 +303,7 @@ public:
 		// Manual input
 		button_width += 2;
 		g->DrawRectangle(&Pen(StaticColours::ListForeground, 2.0f), Rect(button_x + button_width, TopRight.Y + y_Cursor + 1, WIDTH - button_width - 12, 18));
-
+		*/
 		dc->RestoreDC(svDc);
 	};
 };

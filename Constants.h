@@ -76,6 +76,8 @@ namespace StaticColours {
     const Gdiplus::Color ListBackground(43, 51, 54);
     const Gdiplus::Color ListForeground(0, 0, 0);
 
+    const Gdiplus::Color ListLightForeground(93, 103, 112);
+
     const Gdiplus::Color SelectListBackground(32, 61, 64);
     const Gdiplus::Color SelectActiveListBackground(105, 180, 211);
 }
@@ -126,7 +128,7 @@ static string GetFullOCL(string callsign) {
         for (auto d : SharedData::OCLData) {
             if (d.contains("callsign") && d.contains("status") && d.contains("level") && d.contains("fix") && d.contains("mach") && d.contains("extra_info")) {
                 if (d["callsign"] == callsign && d["status"] == "CLEARED")
-                    return string("OCL ") + d["fix"].get<std::string>() + string(" ") + d["level"].get<std::string>() + string(" M")+ d["mach"].get<std::string>() + string(" ") + d["extra_info"].get<std::string>();
+                    return string("OCL ") + d["fix"].get<std::string>() + string(" ") + d["level"].get<std::string>() + string(" m")+ d["mach"].get<std::string>() + string(" ") + d["extra_info"].get<std::string>();
             }
         }
     }

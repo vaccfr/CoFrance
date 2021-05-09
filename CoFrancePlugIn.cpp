@@ -399,7 +399,7 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
 
                 int ocl_level = GetOCLLevel(FlightPlan.GetCallsign());
 
-                if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() != ocl_level && ocl_level != 0) {
+                if ((FlightPlan.GetControllerAssignedData().GetClearedAltitude() != ocl_level) && ocl_level != 0) {
                     *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
                     auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_departure");
                     *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
@@ -846,15 +846,15 @@ string CoFrancePlugIn::LoadOCLData()
             }
             else {
                 cli.stop();
-                return "{}";
+                return "[]";
             }
         }
 
         cli.stop();
     }
     catch (const std::exception& exc) {
-        return "";
+        return "[]";
     }
-
-    return "";
+    return "[]";
+    //return "[ { \"callsign\": \"BER1PE\", \"status\": \"CLEARED\", \"nat\": \"A\", \"fix\": \"MALOT\", \"level\": \"320\", \"mach\": \"0.89\", \"estimating_time\": \"1921\", \"clearance_issued\": \"2021-03-26 00:21:19\", \"extra_info\": \"CROSS MALOT NOT BEFORE 1925\" }, { \"callsign\":\"ADB3908\", \"status\":\"PENDING\", \"nat\":\"RR\", \"fix\":\"PORTI\", \"level\": \"350\", \"mach\": \"0.82\", \"estimating_time\":\"18:41\", \"clearance_issued\":null, \"extra_info\":null } ]";
 }
