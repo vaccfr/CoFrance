@@ -359,8 +359,8 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					continue;
 
 
-				// If we have an aircaft assumed, we force it through the filters
-				bool owned_by_me = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe();
+				// If we have an aircaft assumed or handoff in progress or intruder, we force it through the filters
+				bool owned_by_me = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe() || (radarTarget.GetCorrelatedFlightPlan().GetState() == FLIGHT_PLAN_STATE_TRANSFER_TO_ME_INITIATED);
 
 				// We skip targets slower than 40kts
 				if (radarTarget.GetPosition().GetReportedGS() < 40)
@@ -418,7 +418,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				// We can now draw the ac symbol
 				POINT TargetCenter = ConvertCoordFromPositionToPixel(radarTarget.GetPosition().GetPosition());
 				Rect SymbolRect = Rect(TargetCenter.x - SymbolSize, TargetCenter.y - SymbolSize, SymbolSize * 2, SymbolSize * 2);
-				g.DrawEllipse(&Pen(AcColor), SymbolRect);
+				g.DrawEllipse(&Pen(AcColor, 2.0f), SymbolRect);
 
 				ToAddAcSymbolScreenObject.insert(make_pair(radarTarget.GetCallsign(), CRect(SymbolRect.GetLeft(), SymbolRect.GetTop(), SymbolRect.GetRight(), SymbolRect.GetBottom())));
 				

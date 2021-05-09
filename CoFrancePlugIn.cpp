@@ -146,7 +146,6 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
                 aspeed += to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed() + 1) + "-";
             else
                 aspeed += to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed());
-
         }
 
         strcpy_s(sItemString, 16, aspeed.c_str());

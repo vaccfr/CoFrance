@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -207,6 +207,7 @@
     <ClInclude Include="CoFrance.h" />
     <ClInclude Include="CoFrancePlugIn.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="DYPWindow.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PopupSpeedAssign.h" />
