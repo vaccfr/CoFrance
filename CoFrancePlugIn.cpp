@@ -128,24 +128,25 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
         strcpy_s(sItemString, 16, "");
     }
 
+
     if (ItemCode == CoFranceTags::ASSIGNED_SPEED) {
         string aspeed = "";
         if (FlightPlan.GetControllerAssignedData().GetAssignedMach() != 0) {
             aspeed = "m";
 
             aspeed += "." + to_string(FlightPlan.GetControllerAssignedData().GetAssignedMach());
-            if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() == 2)
+            if (string(FlightPlan.GetControllerAssignedData().GetFlightStripAnnotation(2)) == string("+"))
                 aspeed += "+";
-            if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() == 1)
+            if (string(FlightPlan.GetControllerAssignedData().GetFlightStripAnnotation(2)) == string("-"))
                 aspeed += "-";
         } else if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() != 0) {
             aspeed = "k";
             if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() % 10 == 1)
-                aspeed += to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed() - 1) + "+";
+                aspeed += to_string((FlightPlan.GetControllerAssignedData().GetAssignedSpeed() - 1)/10) + "+";
             else if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() % 10 == 9)
-                aspeed += to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed() + 1) + "-";
+                aspeed += to_string((FlightPlan.GetControllerAssignedData().GetAssignedSpeed() + 1)/10) + "-";
             else
-                aspeed += to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed());
+                aspeed += to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed()/10);
         }
 
         strcpy_s(sItemString, 16, aspeed.c_str());
@@ -399,7 +400,11 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
 
                 int ocl_level = GetOCLLevel(FlightPlan.GetCallsign());
 
-                if ((FlightPlan.GetControllerAssignedData().GetClearedAltitude() != ocl_level) && ocl_level != 0) {
+                int cfl = FlightPlan.GetControllerAssignedData().GetClearedAltitude();
+                if (cfl == 0)
+                    cfl = FlightPlan.GetControllerAssignedData().GetFinalAltitude();
+
+                if (cfl != ocl_level && ocl_level != 0) {
                     *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
                     auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_departure");
                     *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
@@ -855,6 +860,8 @@ string CoFrancePlugIn::LoadOCLData()
     catch (const std::exception& exc) {
         return "[]";
     }
+
     return "[]";
+
     //return "[ { \"callsign\": \"BER1PE\", \"status\": \"CLEARED\", \"nat\": \"A\", \"fix\": \"MALOT\", \"level\": \"320\", \"mach\": \"0.89\", \"estimating_time\": \"1921\", \"clearance_issued\": \"2021-03-26 00:21:19\", \"extra_info\": \"CROSS MALOT NOT BEFORE 1925\" }, { \"callsign\":\"ADB3908\", \"status\":\"PENDING\", \"nat\":\"RR\", \"fix\":\"PORTI\", \"level\": \"350\", \"mach\": \"0.82\", \"estimating_time\":\"18:41\", \"clearance_issued\":null, \"extra_info\":null } ]";
 }

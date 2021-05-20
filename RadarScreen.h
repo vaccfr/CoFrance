@@ -31,6 +31,7 @@ public:
 	bool EnableFilters = false;
 
 	bool EnableVV = false;
+	bool ShowDYP = false;
 	int VV_Minutes = 2;
 
 	char* SaveData_RadarDrawing = "RAD";
@@ -59,6 +60,7 @@ public:
 	int BUTTON_VV_TIME = 955;
 	int BUTTON_APPROACH = 956;
 	int BUTTON_OCL = 957;
+	int BUTTON_DYP = 958;
 
 	int FUNCTION_SET_VV_TIME = 785;
 	int FUNCTION_SET_LOWER_FILTER = 787;

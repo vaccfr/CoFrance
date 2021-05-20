@@ -52,6 +52,8 @@ public:
 
 			int aspeed = fp.GetControllerAssignedData().GetAssignedSpeed();
 
+			int mach = fp.GetControllerAssignedData().GetAssignedMach();
+
 			if (aspeed == 1)
 				min_active = true;
 
@@ -62,6 +64,12 @@ public:
 				max_active = true;
 
 			if (aspeed != 0 && aspeed % 10 == 1)
+				min_active = true;
+
+			if (mach != 0 && string(fp.GetControllerAssignedData().GetFlightStripAnnotation(2)) == string("-"))
+				max_active = true;
+
+			if (mach != 0 && string(fp.GetControllerAssignedData().GetFlightStripAnnotation(2)) == string("+"))
 				min_active = true;
 
 			initialise = false;

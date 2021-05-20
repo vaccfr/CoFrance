@@ -123,6 +123,10 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			StartOfMenu.x = r.right;
 			r = this->DrawMenuBarButton(&dc, StartOfMenu, "OCL", SharedData::OCLEnabled);
 			AddScreenObject(BUTTON_OCL, "", r, false, "");
+			StartOfMenu.x = r.right;
+			r = this->DrawMenuBarButton(&dc, StartOfMenu, "DYP", ShowDYP);
+			AddScreenObject(BUTTON_DYP, "", r, false, "");
+
 
 			for (auto kv : ToAddAcSymbolScreenObject) {
 				AddScreenObject(AC_SYMBOL, kv.first.c_str(), kv.second, false, "");
@@ -162,8 +166,10 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			if (aspPopup.active_ac.length() > 0)
 				aspPopup.Draw(&g, &dc, this, MousePt);
 
-			dyp.active_ac = GetPlugIn()->FlightPlanSelectASEL().GetCallsign();
-			dyp.Draw(&g, &dc, this, MousePt);
+			if (ShowDYP) {
+				dyp.active_ac = GetPlugIn()->FlightPlanSelectASEL().GetCallsign();
+				dyp.Draw(&g, &dc, this, MousePt);
+			}
 
 			dc.RestoreDC(svDc);
 		}
@@ -435,6 +441,8 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				else
 					previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPreviousPosition(radarTarget.GetPosition()));
 
+				//CPen trailPen(PS_SOLID, 1, AcColor.ToCOLORREF());
+				//CPen* oldPen = dc.SelectObject(&trailPen);
 				CPosition compareToPos = radarTarget.GetPosition().GetPosition();
 				for (int j = 0; j < NumberOfTrails; j++) {
 					POINT pCoordNative = ConvertCoordFromPositionToPixel(previousPos.GetPosition());
@@ -450,6 +458,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					LeftSide.X = pCoord.X - LengthOfLine / 2;
 					LeftSide.Y = pCoord.Y;
 
+
 					RightSide.X = pCoord.X + LengthOfLine / 2;
 					RightSide.Y = pCoord.Y;
 
@@ -457,7 +466,9 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					RightSide = rotatePoint(pCoord, static_cast<float>(DegToRad(previousPos.GetPosition().DirectionTo(compareToPos))), RightSide);
 
 					g.DrawLine(&Pen(AcColor), LeftSide, RightSide);
-
+					
+					//dc.MoveTo(LeftSide.X, LeftSide.Y);
+					//dc.LineTo(RightSide.X, RightSide.Y);
 
 					compareToPos = previousPos.GetPosition();
 					if (ApproachMode)
@@ -465,6 +476,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					else
 						previousPos = radarTarget.GetPreviousPosition(radarTarget.GetPreviousPosition(previousPos));
 				}
+				//dc.SelectObject(&oldPen);
 			}
 		}
 	} 
@@ -565,6 +577,9 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 	if (ObjectType == BUTTON_VV)
 		EnableVV = !EnableVV;
 
+	if (ObjectType == BUTTON_DYP)
+		ShowDYP = !ShowDYP;
+
 	if (ObjectType == BUTTON_APPROACH)
 		ApproachMode = !ApproachMode;
 
@@ -605,6 +620,7 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 		if (fp.GetTrackingControllerIsMe()) {
 			fp.GetControllerAssignedData().SetAssignedMach(0);
 			fp.GetControllerAssignedData().SetAssignedSpeed(0);
+			fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "");
 		}
 
 		aspPopup.Reset();
@@ -620,13 +636,16 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 			if (aspPopup.is_mach) {
 				int selected = stoi(sObjectId);
 				if (aspPopup.max_active)
-					fp.GetControllerAssignedData().SetAssignedSpeed(2);
-				if (aspPopup.min_active)
-					fp.GetControllerAssignedData().SetAssignedSpeed(1);
+					fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "-");
+				else if (aspPopup.min_active)
+					fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "+");
+				else
+					fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "");
 				fp.GetControllerAssignedData().SetAssignedMach(selected);
 			}
 			else {
 				int selected = stoi(sObjectId);
+				fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "");
 				if (aspPopup.max_active)
 					selected--;
 				if (aspPopup.min_active)
