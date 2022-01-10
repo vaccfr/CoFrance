@@ -7,7 +7,7 @@
 #include "nlohmann/json.hpp"
 
 #define MY_PLUGIN_NAME "CoFrance"
-#define MY_PLUGIN_VERSION "1.4dev"
+#define MY_PLUGIN_VERSION "@appveyor_build"
 #define MY_PLUGIN_DEVELOPER "Pierre Ferran"
 #define MY_PLUGIN_COPYRIGHT "GPL v3"
 
