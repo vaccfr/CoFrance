@@ -52,6 +52,7 @@ namespace CoFranceTags {
     const int FUNCTION_ASP_TOOL_LIST = 903;
     const int FUNCTION_ASP_TOOL_TOGGLE_M = 904;
     const int FUNCTION_ASP_TOOL_RESUME = 905;
+    const int FUNCTION_ASP_TOOL_CANCEL = 906;
 }
 
 namespace CoFranceCharacters {

@@ -215,7 +215,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				size_t tp_decimal_pos = tp_distanceText.find(".");
 				tp_distanceText = tp_distanceText.substr(0, tp_decimal_pos + 2) + "Nm";
 
-				tp_distanceText = tp_distanceText + " " + tp_headingText + "°";
+				tp_distanceText = tp_distanceText + " " + tp_headingText + "ï¿½";
 				
 				dc.TextOutA(OffsetText.X, OffsetText.Y, tp_distanceText.c_str());
 				OffsetText.Y += dc.GetTextExtent(tp_distanceText.c_str()).cy + 5;
@@ -265,7 +265,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					size_t decimal_pos = distanceText.find(".");
 					distanceText = distanceText.substr(0, decimal_pos + 2)+"Nm";
 
-					distanceText = distanceText + " " + headingText + "°";
+					distanceText = distanceText + " " + headingText + "ï¿½";
 
 					POINT MidPointDistance = { (int)((FirstPos.x + SecondPos.x) / 2), (int)((FirstPos.y + SecondPos.y) / 2) };
 
@@ -623,6 +623,10 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 			fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "");
 		}
 
+		aspPopup.Reset();
+	}
+
+	if (ObjectType == CoFranceTags::FUNCTION_ASP_TOOL_CANCEL) {
 		aspPopup.Reset();
 	}
 

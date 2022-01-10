@@ -6,7 +6,7 @@
 class PopupSpeedAssign {
 protected:
 	const static int WIDTH = 100;
-	const static int HEIGHT = 8 * 20 + 50 + 20 + 20 + 20 + 25;
+	const static int HEIGHT = 8 * 20 + 50 + 20 + 20 + 20 + 25 + 20;
 	
 	bool initialise = true;
 	
@@ -216,6 +216,18 @@ public:
 		// Manual input
 		button_width += 2;
 		g->DrawRectangle(&Pen(StaticColours::ListForeground, 2.0f), Rect(button_x+ button_width, TopRight.Y+y_Cursor+1, WIDTH-button_width-12, 18));
+
+		// Cancel
+		y_Cursor += 25;
+		button_width = WIDTH - 10;
+		button_x = TopRight.X + 5;
+
+		pt = RoundedRect(Rect(button_x, TopRight.Y + y_Cursor, button_width, 20), 3);
+		g->DrawPath(&Pen(StaticColours::ListForeground), pt);
+		g->FillPath(&SolidBrush(StaticColours::ListBackground), pt);
+		DrawCenteredText(dc, { button_x + button_width / 2, TopRight.Y + y_Cursor + 2 }, "Cancel");
+
+		radar->AddScreenObject(CoFranceTags::FUNCTION_ASP_TOOL_CANCEL, "", CRect({ button_x, TopRight.Y + y_Cursor }, CSize(button_width, 20)), false, "");
 
 		dc->RestoreDC(svDc);
 	};
