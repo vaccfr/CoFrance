@@ -195,10 +195,10 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
             }
 
             if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() == 1)
-                cfl = "®";
+                cfl = "Â®";
 
             if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() == 2)
-                cfl = "©";
+                cfl = "Â©";
 
             // If not detailed and reached alt, then nothing to show
             if (ItemCode == CoFranceTags::CFL && abs(RadarTarget.GetPosition().GetFlightLevel() - FlightPlan.GetClearedAltitude()) < 100)
@@ -392,6 +392,7 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
         if (!FlightPlan.IsValid())
             return;
         string test = FlightPlan.GetFlightPlanData().GetRoute();
+        const char* destination = FlightPlan.GetFlightPlanData().GetDestination();
         // if is OCL revelant
         if (StringContainsArray(test, Brest_Oceanic_Points)) {
             // Display OCL flag
@@ -415,8 +416,11 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
                     strcpy_s(sItemString, 16, item.c_str());
                 }
             }
-            else {
-                // If there is no OCL and exit of sector is within 45mins, we display an alert
+            // If there is no OCL and exit of sector is within 45mins and the flight is headed to the Americas (ICAOs starting with KCPSTMN, and SPEM) we display an alert
+            else if (startsWith("K", destination) || startsWith("C", destination) || 
+            startsWith("P", destination) || startsWith("T", destination) || 
+            startsWith("S", destination) || startsWith("M", destination) || 
+            startsWith("N", destination) || startsWith("LFVP", destination) || startsWith("LFVM", destination)) {
                 int minutes = 99;
                 for (int i = FlightPlan.GetExtractedRoute().GetPointsCalculatedIndex(); i < FlightPlan.GetExtractedRoute().GetPointsNumber(); i++) {
                     if (StringContainsArray(FlightPlan.GetExtractedRoute().GetPointName(i), Brest_Oceanic_Points)) {
@@ -464,7 +468,7 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
                 *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
             }
             
-            strcpy_s(sItemString, 16, "ß");
+            strcpy_s(sItemString, 16, "ÃŸ");
         }
         else {
             strcpy_s(sItemString, 16, "");
