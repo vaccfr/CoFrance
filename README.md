@@ -12,6 +12,10 @@
 
 TBD
 
+### Nightly build
+
+Nightly build is available at: [](https://ci.appveyor.com/api/buildjobs/6803xjsi239e3bb1/artifacts/CoFrance-nightly.zip)
+
 ### Dependencies
 
 This project's dependencies can be found in the "include" folder.
@@ -23,6 +27,8 @@ A special thank you to the following people:
 - [@pierr3](https://github.com/pierr3), for creating the plugin;
 
 ### License
+
+See LICENSE for full details.
 
 CoFrance - French controller EuroScope PlugIn
 Copyright (C) 2020  Pierre Ferran
