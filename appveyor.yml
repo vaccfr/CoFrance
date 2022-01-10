@@ -43,9 +43,9 @@ install:
 configuration: Release
 
 build_script:
-  - ps: (Get-Content  C:\projects\cofrance\Constants.h).replace('@appveyor_build', $Env:appveyor_build_version) | Set-Content  C:\projects\vsmr\vSMR\SMRPlugin.hpp
-  - ps: (Get-Content  C:\projects\cofrance\CoFrance.rc).replace('@appveyor_build', $Env:appveyor_build_version) | Set-Content  C:\projects\vsmr\vSMR\vSMR.rc
-  - cmd: msbuild "C:\projects\cofrance\vSMR.sln" /m /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - ps: (Get-Content  C:\projects\cofrance\Constants.h).replace('@appveyor_build', $Env:appveyor_build_version) | Set-Content  C:\projects\cofrance\Constants.h
+  - ps: (Get-Content  C:\projects\cofrance\CoFrance.rc).replace('@appveyor_build', $Env:appveyor_build_version) | Set-Content  C:\projects\cofrance\CoFrance.rc
+  - cmd: msbuild "C:\projects\cofrance\CoFrance.sln" /m /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
   - cmd: mkdir CoFrance-nightly
