@@ -6,7 +6,7 @@
 class PopupSpeedAssign {
 protected:
 	const static int WIDTH = 100;
-	const static int HEIGHT = 8 * 20 + 50 + 20 + 20 + 20 + 25 + 20;
+	const static int HEIGHT = 8 * 20 + 50 + 20 + 20 + 20 + 25 + 25;
 	
 	bool initialise = true;
 	

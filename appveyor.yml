@@ -58,4 +58,4 @@ after_build:
 #---------------------------------#
 
 artifacts:
-  - path: CoFrance-nightly.zip
+  - path: CoFrance-nightly-%APPVEYOR_BUILD_VERSION%.zip
