@@ -51,7 +51,7 @@ build_script:
 after_build:
   - cmd: mkdir CoFrance-nightly
   - cmd: cp Release\CoFrance.dll CoFrance-nightly\
-  - cmd: 7z a CoFrance-nightly.zip %APPVEYOR_BUILD_FOLDER%\CoFrance-nightly\
+  - cmd: 7z a CoFrance-nightly-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\CoFrance-nightly\
 
 #---------------------------------#
 #      artifacts configuration    #
