@@ -14,7 +14,7 @@ TBD
 
 ### Nightly build
 
-Nightly build is available at: [AppVeyor](https://ci.appveyor.com/api/projects/pierr3/CoFrance/artifacts/CoFrance-nightly.zip)
+Nightly build is available at: [AppVeyor](https://ci.appveyor.com/project/pierr3/cofrance/build/artifacts)
 
 ### Dependencies
 
