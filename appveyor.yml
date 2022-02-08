@@ -29,7 +29,7 @@ max_jobs: 1
 #---------------------------------#
 
 # Build worker image (VM template)
-os: Visual Studio 2019
+os: Visual Studio 2022
 
 #---------------------------------#
 #       build configuration       #
@@ -37,6 +37,8 @@ os: Visual Studio 2019
 
 install:
   - cmd: git submodule update --init --recursive
+  - cmd: .\vcpkg\bootstrap-vcpkg.bat
+  - cmd: vcpkg integrate install 
   - cmd: msbuild /version
 
 # build Configuration, i.e. Debug, Release, etc.

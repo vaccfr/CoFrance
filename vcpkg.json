@@ -1,0 +1,11 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "org.vaccfr.cofrance",
+    "version": "1.5.0",
+    "dependencies": [
+        "openssl",
+        "curl",
+        "nlohmann-json",
+        "cpp-httplib"
+    ]
+  }
