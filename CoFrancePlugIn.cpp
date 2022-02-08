@@ -195,10 +195,10 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
             }
 
             if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() == 1)
-                cfl = "Â®";
+                cfl = "®";
 
             if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() == 2)
-                cfl = "Â©";
+                cfl = "©";
 
             // If not detailed and reached alt, then nothing to show
             if (ItemCode == CoFranceTags::CFL && abs(RadarTarget.GetPosition().GetFlightLevel() - FlightPlan.GetClearedAltitude()) < 100)
@@ -468,7 +468,7 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
                 *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
             }
             
-            strcpy_s(sItemString, 16, "ÃŸ");
+            strcpy_s(sItemString, 16, "ß");
         }
         else {
             strcpy_s(sItemString, 16, "");
