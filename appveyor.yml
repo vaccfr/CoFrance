@@ -39,6 +39,7 @@ install:
   - cmd: git submodule update --init --recursive
   - cmd: .\vcpkg\bootstrap-vcpkg.bat
   - cmd: vcpkg integrate install 
+  - cmd: vcpkg install
   - cmd: msbuild /version
 
 # build Configuration, i.e. Debug, Release, etc.
