@@ -29,17 +29,20 @@ max_jobs: 1
 #---------------------------------#
 
 # Build worker image (VM template)
-os: Visual Studio 2022
+os: Visual Studio 2019
 
 #---------------------------------#
 #       build configuration       #
 #---------------------------------#
 
 install:
+  - cmd: cd C:\Tools\vcpkg
+  - cmd: git pull
+  - cmd: .\bootstrap-vcpkg.bat
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - cmd: git submodule update --init --recursive
-  - cmd: .\vcpkg\bootstrap-vcpkg.bat
-  - cmd: vcpkg integrate install 
-  - cmd: vcpkg install
+  - cmd: vcplg install --triplet=x86-windows-static
+  - cmd: vcpkg integrate install
   - cmd: msbuild /version
 
 # build Configuration, i.e. Debug, Release, etc.
