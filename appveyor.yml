@@ -41,7 +41,7 @@ install:
   - cmd: .\bootstrap-vcpkg.bat
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - cmd: git submodule update --init --recursive
-  - cmd: vcplg install --triplet=x86-windows-static
+  - cmd: vcpkg install --triplet=x86-windows-static
   - cmd: vcpkg integrate install
   - cmd: msbuild /version
 
