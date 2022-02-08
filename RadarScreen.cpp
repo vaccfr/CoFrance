@@ -215,7 +215,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 				size_t tp_decimal_pos = tp_distanceText.find(".");
 				tp_distanceText = tp_distanceText.substr(0, tp_decimal_pos + 2) + "Nm";
 
-				tp_distanceText = tp_distanceText + " " + tp_headingText + "Â°";
+				tp_distanceText = tp_distanceText + " " + tp_headingText + "°";
 				
 				dc.TextOutA(OffsetText.X, OffsetText.Y, tp_distanceText.c_str());
 				OffsetText.Y += dc.GetTextExtent(tp_distanceText.c_str()).cy + 5;
@@ -265,7 +265,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 					size_t decimal_pos = distanceText.find(".");
 					distanceText = distanceText.substr(0, decimal_pos + 2)+"Nm";
 
-					distanceText = distanceText + " " + headingText + "Â°";
+					distanceText = distanceText + " " + headingText + "°";
 
 					POINT MidPointDistance = { (int)((FirstPos.x + SecondPos.x) / 2), (int)((FirstPos.y + SecondPos.y) / 2) };
 
