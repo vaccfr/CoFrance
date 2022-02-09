@@ -217,6 +217,7 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 
 				tp_distanceText = tp_distanceText + " " + tp_headingText + "°";
 				
+				
 				dc.TextOutA(OffsetText.X, OffsetText.Y, tp_distanceText.c_str());
 				OffsetText.Y += dc.GetTextExtent(tp_distanceText.c_str()).cy + 5;
 

@@ -36,6 +36,7 @@ os: Visual Studio 2019
 #---------------------------------#
 
 install:
+  - cmd: git config --global core.autocrlf true
   - cmd: cd C:\Tools\vcpkg
   - cmd: git pull
   - cmd: .\bootstrap-vcpkg.bat
