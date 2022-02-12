@@ -179,9 +179,11 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			// Menubar
 
 			// We stop here if no trag drawings
-			if (!EnableTagDrawings)
-				goto close_all;
-
+			if (!EnableTagDrawings) {
+				dc.Detach();
+				g.ReleaseHDC(hDC);
+				return;
+			}
 
 			Color SepToolColour = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_tool"));
 			Pen SepToolDashPen(SepToolColour);
@@ -485,8 +487,6 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 		Log(exc.what());
 		GetPlugIn()->DisplayUserMessage("Message", "CoFrance PlugIn", string("Error parsing file config file " + string(exc.what())).c_str(), false, false, false, false, false);
 	}
-
-close_all:
 
 	dc.Detach();
 	g.ReleaseHDC(hDC);
