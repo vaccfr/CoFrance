@@ -530,7 +530,7 @@ void CoFrancePlugIn::OnTimer(int Counter)
         }
     }
 
-    //Stca->OnRefresh(this);
+    Stca->OnRefresh(this);
     Blink = !Blink;
 
     // Every 5 seconds send CPDLC data and poll OCL data
