@@ -6,13 +6,13 @@ RadarScreen::RadarScreen(CoFrancePlugIn* CoFrancepluginInstance)
 	this->CoFrancepluginInstance = CoFrancepluginInstance;
 
 	SepToolColour = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_tool"));
-	SepToolDashPen.Create(SepToolColour);
-	SepToolPen.Create(SepToolColour);
+	SepToolDashPen = Pen(SepToolColour);
+	SepToolPen = Pen(SepToolColour);
 	REAL dashVals[2] = { 4.0f, 4.0f };
 	SepToolDashPen.SetDashPattern(dashVals, 2);
 
 	SepToolBackground = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_background"));
-	SepToolBorder.Create(vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_border")));
+	SepToolBorder = Pen(vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_border")));
 }
 
 RadarScreen::~RadarScreen()
