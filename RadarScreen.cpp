@@ -4,6 +4,15 @@
 RadarScreen::RadarScreen(CoFrancePlugIn* CoFrancepluginInstance)
 {
 	this->CoFrancepluginInstance = CoFrancepluginInstance;
+
+	SepToolColour = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_tool"));
+	SepToolDashPen = Pen(SepToolColour);
+	SepToolPen = Pen(SepToolColour);
+	REAL dashVals[2] = { 4.0f, 4.0f };
+	SepToolDashPen.SetDashPattern(dashVals, 2);
+
+	SepToolBackground = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_background"));
+	SepToolBorder = Pen(vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_border")));
 }
 
 RadarScreen::~RadarScreen()
@@ -179,18 +188,11 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 			// Menubar
 
 			// We stop here if no trag drawings
-			if (!EnableTagDrawings)
-				goto close_all;
-
-
-			Color SepToolColour = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_tool"));
-			Pen SepToolDashPen(SepToolColour);
-			Pen SepToolPen(SepToolColour);
-			REAL dashVals[2] = { 4.0f, 4.0f };
-			SepToolDashPen.SetDashPattern(dashVals, 2);
-
-			Color SepToolBackground = vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_background"));
-			Pen SepToolBorder(vectorToGdiplusColour(toml::find<std::vector<int>>(this->CoFrancepluginInstance->CoFranceConfig, "colours", "sep_border")));
+			if (!EnableTagDrawings) {
+				dc.Detach();
+				g.ReleaseHDC(hDC);
+				return;
+			}
 
 			int saveDcActiveSepTool = dc.SaveDC();
 			dc.SetTextColor(SepToolColour.ToCOLORREF());
@@ -485,8 +487,6 @@ void RadarScreen::OnRefresh(HDC hDC, int Phase)
 		Log(exc.what());
 		GetPlugIn()->DisplayUserMessage("Message", "CoFrance PlugIn", string("Error parsing file config file " + string(exc.what())).c_str(), false, false, false, false, false);
 	}
-
-close_all:
 
 	dc.Detach();
 	g.ReleaseHDC(hDC);

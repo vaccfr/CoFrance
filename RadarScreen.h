@@ -71,6 +71,11 @@ public:
 	PopupSpeedAssign aspPopup;
 	DYPWindow dyp;
 	
+	Color SepToolColour;
+	Pen SepToolDashPen;
+	Pen SepToolPen;
+	Color SepToolBackground;
+	Pen SepToolBorder;
 
 	//---OnRefresh------------------------------------------------------
 
