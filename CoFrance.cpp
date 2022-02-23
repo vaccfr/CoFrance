@@ -62,6 +62,10 @@ BOOL CCoFranceApp::InitInstance()
 	return TRUE;
 }
 
+void ~CCoFranceApp {
+	delete this->gpMyPlugin;
+}
+
 // CCoFranceApp shutdown
 
 //---EuroScopePlugInInit-----------------------------------------------
@@ -78,5 +82,5 @@ void __declspec (dllexport) EuroScopePlugInInit(EuroScopePlugIn::CPlugIn** ppPlu
 
 void __declspec (dllexport) EuroScopePlugInExit(void)
 {
-	
+	delete theApp;
 }
