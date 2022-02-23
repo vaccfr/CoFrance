@@ -47,7 +47,7 @@ CCoFranceApp::CCoFranceApp()
 	
 }
 
-CCoFranceApp::~CCoFranceApp {
+CCoFranceApp::~CCoFranceApp() {
 	delete gpMyPlugin;
 }
 
