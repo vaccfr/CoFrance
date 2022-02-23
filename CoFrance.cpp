@@ -47,6 +47,10 @@ CCoFranceApp::CCoFranceApp()
 	
 }
 
+CCoFranceApp::~CCoFranceApp {
+	delete gpMyPlugin;
+}
+
 
 // The one and only CCoFranceApp object
 
@@ -60,10 +64,6 @@ BOOL CCoFranceApp::InitInstance()
 	CWinApp::InitInstance();
 	
 	return TRUE;
-}
-
-void ~CCoFranceApp {
-	delete this->gpMyPlugin;
 }
 
 // CCoFranceApp shutdown
