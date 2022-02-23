@@ -18,6 +18,7 @@ class CCoFranceApp : public CWinApp
 {
 public:
 	CCoFranceApp();
+	~CCoFranceApp();
 
 // Overrides
 public:
