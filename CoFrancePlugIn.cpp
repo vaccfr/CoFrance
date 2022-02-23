@@ -195,10 +195,10 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
             }
 
             if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() == 1)
-                cfl = "�";
+                cfl = "®";
 
             if (FlightPlan.GetControllerAssignedData().GetClearedAltitude() == 2)
-                cfl = "�";
+                cfl = "©";
 
             // If not detailed and reached alt, then nothing to show
             if (ItemCode == CoFranceTags::CFL && abs(RadarTarget.GetPosition().GetFlightLevel() - FlightPlan.GetClearedAltitude()) < 100)
@@ -468,7 +468,7 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
                 *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
             }
             
-            strcpy_s(sItemString, 16, "�");
+            strcpy_s(sItemString, 16, "ß");
         }
         else {
             strcpy_s(sItemString, 16, "");
@@ -530,8 +530,12 @@ void CoFrancePlugIn::OnTimer(int Counter)
         }
     }
 
-    Stca->OnRefresh(this);
+    
     Blink = !Blink;
+    
+    // STCA gets refreshed every 3 seconds
+    if (Counter % 3 == 0)
+        Stca->OnRefresh(this);
 
     // Every 5 seconds send CPDLC data and poll OCL data
     if (Counter % 5 == 0) {
