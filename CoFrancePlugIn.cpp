@@ -534,8 +534,8 @@ void CoFrancePlugIn::OnTimer(int Counter)
     Blink = !Blink;
     
     // STCA gets refreshed every 3 seconds
-    if (Counter % 3 == 0)
-        Stca->OnRefresh(this);
+    //if (Counter % 3 == 0)
+    //   Stca->OnRefresh(this);
 
     // Every 5 seconds send CPDLC data and poll OCL data
     if (Counter % 5 == 0) {
