@@ -16,6 +16,7 @@ branches:
   # whitelist
   only:
     - master
+    - performance
 
   # blacklist
   except:
