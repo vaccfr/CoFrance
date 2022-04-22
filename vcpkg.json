@@ -3,7 +3,7 @@
     "name": "cofrance",
     "version": "1.5.0",
     "dependencies": [
-        "openssl",
+        {"name": "openssl", "version-string": "1.1.1n"},
         "curl",
         "nlohmann-json",
         "cpp-httplib",
