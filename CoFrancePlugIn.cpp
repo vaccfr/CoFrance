@@ -78,6 +78,11 @@ bool CoFrancePlugIn::OnCompileCommand(const char* sCommandLine)
         return true;
     }
 
+    if (strcmp(sCommandLine, ".cofrance perf") == 0) {
+        performanceMode = true;
+        return true;
+    }
+
     return false;
 }
 
@@ -534,7 +539,7 @@ void CoFrancePlugIn::OnTimer(int Counter)
     Blink = !Blink;
     
     // STCA gets refreshed every 3 seconds
-    if (Counter % 3 == 0)
+    if (Counter % 3 == 0 && !performanceMode)
         Stca->OnRefresh(this);
 
     // Every 5 seconds send CPDLC data and poll OCL data

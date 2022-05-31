@@ -68,6 +68,8 @@ public:
     std::future<string> RawOCLData;
     nlohmann::json OCLData;
 
+    bool performanceMode = false;
+
     void Log(string s)
     {
         std::ofstream file;
