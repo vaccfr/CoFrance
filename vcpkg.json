@@ -1,9 +1,9 @@
 {
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
     "name": "cofrance",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "dependencies": [
-        {"name": "openssl", "version=": "1.1.1n"},
+        "openssl",
         "curl",
         "nlohmann-json",
         "cpp-httplib",
