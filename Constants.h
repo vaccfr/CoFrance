@@ -12,7 +12,7 @@
 #define MY_PLUGIN_COPYRIGHT "GPL v3"
 
 #define CONFIG_ONLINE_URL_BASE "https://raw.githubusercontent.com"
-#define CONFIG_ONLINE_URL_PATH "/vaccfr/CoFrance/master/CoFrance.toml"
+#define CONFIG_ONLINE_URL_PATH "/vaccfr/CoFrance/master/config.toml"
 #define CONFIG_ONLINE_STAND_API_URL_PATH "/api/cfr/stand"
 #define CONFIG_ONLINE_STAND_API_QUERY_URL_PATH "/api/cfr/stand/query"
 
