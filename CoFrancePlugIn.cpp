@@ -730,7 +730,7 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading config file " + string(exc.what())).c_str(), false, false, false, false, false);
     }
 
-    DisplayUserMessage("Message", "CoFrance PlugIn", "Reading stand API config...", false, false, false, false, false);
+    //DisplayUserMessage("Message", "CoFrance PlugIn", "Reading stand API config...", false, false, false, false, false);
 
     /*try {
         if (fromWeb) {
