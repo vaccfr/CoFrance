@@ -91,7 +91,11 @@ void CoFrancePlugIn::handleWebsocketMessage(const ix::WebSocketMessagePtr& msg) 
     }
     else if (msg->type == ix::WebSocketMessageType::Error)
     {
-        //TODO: handle
+    //TODO: handle
+    }
+        else if (msg->type == ix::WebSocketMessageType::Close)
+    {
+        RemoteSTCA.clear();
     }
 }
 
