@@ -692,12 +692,37 @@ void CoFrancePlugIn::OnFlightPlanControllerAssignedDataUpdate(CFlightPlan Flight
 
 void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 {
+    if (!RadarTarget.IsValid()) {
+        return;
+    }
 
     // Send to websocket server
     try {
-        webSocket.send(std::string(RadarTarget.GetCallsign()));
-    } catch(std::exception exec) {
+        nlohmann::json j;
 
+        CRadarTargetPositionData pos = RadarTarget.GetPosition();
+
+        j["callsign"] = RadarTarget.GetCallsign();
+        j["lat"] = pos.GetPosition().m_Latitude;
+        j["lon"] = pos.GetPosition().m_Longitude;
+        j["groundspeed"] = pos.GetReportedGS();
+        j["heading"] = pos.GetReportedHeading();
+        j["altitude"] = pos.GetAltitude();
+
+        // Vertical speed calc
+        CRadarTargetPositionData oldpos = RadarTarget.GetPreviousPosition(pos);
+        int deltaalt = pos.GetAltitude() - oldpos.GetAltitude();
+        int deltaT = oldpos.GetReceivedTime() - pos.GetReceivedTime();
+        float vz = 0.0f;
+        if (deltaT >0) {
+            vz = abs(deltaalt) * (60.0f / deltaT);
+        }
+        j["vz"] = vz;
+
+        
+        webSocket.send(std::string(j.dump()));
+    } catch(std::exception exec) {
+        //DisplayUserMessage("Message", "CoFrance PlugIn", "Error occured sending position data to server.", false, false, false, false, false);
     }
 
     CFlightPlan CorrFp = RadarTarget.GetCorrelatedFlightPlan();
