@@ -17,6 +17,7 @@ branches:
   only:
     - master
     - performance
+    - server-connection
 
   # blacklist
   except:
