@@ -118,17 +118,6 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 #endif //_CRT_NONSTDC_NO_DEPRECATE
 
-#if defined(_MSC_VER)
-#ifdef _WIN64
-  #ifndef ssize_t
-  using ssize_t = __int64;
-  #endif
-#else
-  #ifndef ssize_t
-  using ssize_t = int;
-  #endif
-#endif
-
 #if _MSC_VER < 1900
 #define snprintf _snprintf_s
 #endif
