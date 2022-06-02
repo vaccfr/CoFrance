@@ -42,6 +42,7 @@ install:
   - cmd: cd C:\Tools\vcpkg
   - cmd: git pull
   - cmd: .\bootstrap-vcpkg.bat
+  - cmd: echo.set(VCPKG_BUILD_TYPE release)>> %VCPKG_DIR%\triplets\x86-windows-static.cmake
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - cmd: git submodule update --init --recursive
   - cmd: vcpkg install --triplet=x86-windows-static
@@ -63,7 +64,7 @@ after_build:
   - cmd: 7z a CoFrance-nightly-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\CoFrance-nightly\
 
 cache:
-  - c:\tools\vcpkg\installed\
+  - c:\Tools\vcpkg\installed\
 
 #---------------------------------#
 #      artifacts configuration    #

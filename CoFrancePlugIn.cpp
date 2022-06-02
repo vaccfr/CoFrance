@@ -707,11 +707,11 @@ void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
         j["lon"] = pos.GetPosition().m_Longitude;
         j["groundspeed"] = pos.GetReportedGS();
         j["heading"] = pos.GetReportedHeading();
-        j["altitude"] = pos.GetAltitude();
+        j["altitude"] = pos.GetFlightLevel();
 
         // Vertical speed calc
         CRadarTargetPositionData oldpos = RadarTarget.GetPreviousPosition(pos);
-        int deltaalt = pos.GetAltitude() - oldpos.GetAltitude();
+        int deltaalt = pos.GetFlightLevel() - oldpos.GetFlightLevel();
         int deltaT = oldpos.GetReceivedTime() - pos.GetReceivedTime();
         float vz = 0.0f;
         if (deltaT >0) {
