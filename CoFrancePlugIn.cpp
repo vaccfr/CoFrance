@@ -60,7 +60,7 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 
-    webSocket.setUrl(std::string("ws://127.0.0.1:4756"));
+    webSocket.setUrl(std::string("ws://cofrance.ops.vatsim.fr:4756"));
     webSocket.setOnMessageCallback(CoFrancePlugIn::handleWebsocketMessage);
     webSocket.start();
 }
