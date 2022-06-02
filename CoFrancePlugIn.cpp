@@ -2,7 +2,7 @@
 #include "CoFrancePlugIn.h"
 #include "RadarScreen.h"
 
-ix::WebSocket webSocket;
+static ix::WebSocket webSocket;
 
 CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY_PLUGIN_NAME, MY_PLUGIN_VERSION, MY_PLUGIN_DEVELOPER, MY_PLUGIN_COPYRIGHT)
 {

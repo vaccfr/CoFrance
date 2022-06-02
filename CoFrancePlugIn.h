@@ -20,8 +20,6 @@ using namespace EuroScopePlugIn;
 using namespace Gdiplus;
 using namespace std;
 
-static ix::WebSocket webSocket;
-
 class CoFrancePlugIn :
     public CPlugIn
 {
