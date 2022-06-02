@@ -3,13 +3,13 @@
 #include "RadarScreen.h"
 
 static ix::WebSocket webSocket;
+static std::vector<string> RemoteSTCA;
 
 CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY_PLUGIN_NAME, MY_PLUGIN_VERSION, MY_PLUGIN_DEVELOPER, MY_PLUGIN_COPYRIGHT)
 {
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
     ix::initNetSystem();
-
 
     char DllPathFile[_MAX_PATH];
 
@@ -19,7 +19,7 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
     
     LoadConfigFile();
 
-    Stca = new CSTCA(CoFranceConfig);
+    //Stca = new CSTCA(CoFranceConfig);
 
     // Register tag items
     RegisterTagItemType("Two number ground speed", CoFranceTags::GS);
@@ -68,25 +68,30 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 CoFrancePlugIn::~CoFrancePlugIn()
 {
     webSocket.stop();
+    ix::uninitNetSystem();
     GdiplusShutdown(gdiplusToken);
 }
 
 void CoFrancePlugIn::handleWebsocketMessage(const ix::WebSocketMessagePtr& msg) {
     if (msg->type == ix::WebSocketMessageType::Message)
     {
-        std::cout << "received message: " << msg->str << std::endl;
-        std::cout << "> " << std::flush;
+        try {
+            auto data = nlohmann::json::parse(msg->str);
+            RemoteSTCA.clear();
+            for (auto d : data)
+                RemoteSTCA.push_back(d);
+        }
+        catch (std::exception &exc) {
+
+        }
     }
     else if (msg->type == ix::WebSocketMessageType::Open)
     {
-        std::cout << "Connection established" << std::endl;
-        std::cout << "> " << std::flush;
+        //TODO: handle
     }
     else if (msg->type == ix::WebSocketMessageType::Error)
     {
-        // Maybe SSL is not configured properly
-        std::cout << "Connection error: " << msg->errorInfo.reason << std::endl;
-        std::cout << "> " << std::flush;
+        //TODO: handle
     }
 }
 
@@ -404,7 +409,7 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
     }
 
     if (ItemCode == CoFranceTags::STCA) {
-        if (Stca->IsSTCA(RadarTarget.GetCallsign())) {
+        if (std::find(RemoteSTCA.begin(), RemoteSTCA.end(), RadarTarget.GetCallsign()) != RemoteSTCA.end()) {
 
             *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
             auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "sep_warning");
@@ -566,8 +571,8 @@ void CoFrancePlugIn::OnTimer(int Counter)
     Blink = !Blink;
     
     // STCA gets refreshed every 3 seconds
-    if (Counter % 3 == 0 && !performanceMode)
-        Stca->OnRefresh(this);
+    //if (Counter % 3 == 0 && !performanceMode)
+    //    Stca->OnRefresh(this);
 
     // Every 5 seconds send CPDLC data and poll OCL data
     if (Counter % 5 == 0) {
@@ -708,6 +713,7 @@ void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
         j["groundspeed"] = pos.GetReportedGS();
         j["heading"] = pos.GetReportedHeading();
         j["altitude"] = pos.GetFlightLevel();
+        j["squawk"] = pos.GetSquawk();
 
         // Vertical speed calc
         CRadarTargetPositionData oldpos = RadarTarget.GetPreviousPosition(pos);
