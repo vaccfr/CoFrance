@@ -23,6 +23,9 @@ branches:
   except:
     - gh-pages
 
+cache:
+  - c:\tools\vcpkg\installed\
+
 # Maximum number of concurrent jobs for the project
 max_jobs: 1
 
