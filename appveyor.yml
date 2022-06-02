@@ -34,7 +34,7 @@ max_jobs: 1
 os: Visual Studio 2019
 
 cache:
-  - c:\Tools\vcpkg\installed\ -> appveyor.yml
+  - C:\Users\appveyor\AppData\Local\vcpkg -> appveyor.yml
 
 #---------------------------------#
 #       build configuration       #
