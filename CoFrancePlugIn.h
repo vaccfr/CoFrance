@@ -9,6 +9,9 @@
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXWebSocket.h>
 #include <ixwebsocket/IXUserAgent.h>
+
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "httplib.h"
 #include <iostream>
 #include "STCA.h"
 #include "nlohmann/json.hpp"
@@ -16,6 +19,8 @@
 using namespace EuroScopePlugIn;
 using namespace Gdiplus;
 using namespace std;
+
+static ix::WebSocket webSocket;
 
 class CoFrancePlugIn :
     public CPlugIn
@@ -57,6 +62,8 @@ public:
 
     void LoadConfigFile(bool fromWeb = true);
 
+    static void handleWebsocketMessage(const ix::WebSocketMessagePtr& msg);
+
     string SendCPDLCActiveAircrafts(string my_callsign, string message);
 
     string SendCPDLCEvent(string ac_callsign, int event_type, string value);
@@ -71,7 +78,6 @@ public:
 
     std::future<string> RawOCLData;
     nlohmann::json OCLData;
-    ix::WebSocket webSocket;
 
     bool performanceMode = false;
 

@@ -6,7 +6,6 @@
         "openssl",
         "curl",
         "nlohmann-json",
-        "cpp-httplib",
         "toml11",
         "ixwebsocket"
     ]

@@ -2,7 +2,7 @@
 #include "CoFrancePlugIn.h"
 #include "RadarScreen.h"
 
-
+ix::WebSocket webSocket;
 
 CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY_PLUGIN_NAME, MY_PLUGIN_VERSION, MY_PLUGIN_DEVELOPER, MY_PLUGIN_COPYRIGHT)
 {
@@ -59,11 +59,35 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
     RegisterTagItemFunction("Open ASP Popup", CoFranceTags::FUNCTION_OPEN_ASP);
 
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
+
+    webSocket.setUrl(std::string("ws://127.0.0.1:4756"));
+    webSocket.setOnMessageCallback(CoFrancePlugIn::handleWebsocketMessage);
+    webSocket.start();
 }
 
 CoFrancePlugIn::~CoFrancePlugIn()
 {
+    webSocket.stop();
     GdiplusShutdown(gdiplusToken);
+}
+
+void CoFrancePlugIn::handleWebsocketMessage(const ix::WebSocketMessagePtr& msg) {
+    if (msg->type == ix::WebSocketMessageType::Message)
+    {
+        std::cout << "received message: " << msg->str << std::endl;
+        std::cout << "> " << std::flush;
+    }
+    else if (msg->type == ix::WebSocketMessageType::Open)
+    {
+        std::cout << "Connection established" << std::endl;
+        std::cout << "> " << std::flush;
+    }
+    else if (msg->type == ix::WebSocketMessageType::Error)
+    {
+        // Maybe SSL is not configured properly
+        std::cout << "Connection error: " << msg->errorInfo.reason << std::endl;
+        std::cout << "> " << std::flush;
+    }
 }
 
 CRadarScreen* CoFrancePlugIn::OnRadarScreenCreated(const char* sDisplayName, bool NeedRadarContent, bool GeoReferenced, bool CanBeSaved, bool CanBeCreated)
@@ -668,6 +692,13 @@ void CoFrancePlugIn::OnFlightPlanControllerAssignedDataUpdate(CFlightPlan Flight
 
 void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 {
+
+    // Send to websocket server
+    try {
+        webSocket.send(std::string(RadarTarget.GetCallsign()));
+    } catch(std::exception exec) {
+
+    }
 
     CFlightPlan CorrFp = RadarTarget.GetCorrelatedFlightPlan();
     if (!CorrFp.IsValid() || !CorrFp.GetTrackingControllerIsMe())
