@@ -6,6 +6,10 @@
 #include <thread>
 #include <future>
 #include <map>
+#include <ixwebsocket/IXNetSystem.h>
+#include <ixwebsocket/IXWebSocket.h>
+#include <ixwebsocket/IXUserAgent.h>
+#include <iostream>
 #include "STCA.h"
 #include "nlohmann/json.hpp"
 
@@ -67,6 +71,7 @@ public:
 
     std::future<string> RawOCLData;
     nlohmann::json OCLData;
+    ix::WebSocket webSocket;
 
     bool performanceMode = false;
 

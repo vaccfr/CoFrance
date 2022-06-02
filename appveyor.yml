@@ -62,6 +62,9 @@ after_build:
   - cmd: cp Release\CoFrance.dll CoFrance-nightly\
   - cmd: 7z a CoFrance-nightly-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\CoFrance-nightly\
 
+cache:
+  - c:\tools\vcpkg\installed\
+
 #---------------------------------#
 #      artifacts configuration    #
 #---------------------------------#

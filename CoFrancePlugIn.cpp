@@ -8,6 +8,9 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 {
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
+    ix::initNetSystem();
+
+
     char DllPathFile[_MAX_PATH];
 
     GetModuleFileNameA(HINSTANCE(&__ImageBase), DllPathFile, sizeof(DllPathFile));
