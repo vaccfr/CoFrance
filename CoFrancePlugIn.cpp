@@ -730,9 +730,7 @@ void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
         j["vz"] = vz;
 
         // Turning rate calc
-        CRadarTargetPositionData oldpos = RadarTarget.GetPreviousPosition(pos);
         int deltaHdg = pos.GetReportedHeading() - oldpos.GetReportedHeading();
-        int deltaT = oldpos.GetReceivedTime() - pos.GetReceivedTime();
         float hdg_rate = 0.0f;
         if (deltaT >0)
             hdg_rate = deltaHdg * (60.0f / deltaT);
