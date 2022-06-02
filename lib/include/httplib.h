@@ -118,6 +118,8 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 #endif //_CRT_NONSTDC_NO_DEPRECATE
 
+#if defined(_MSC_VER)
+
 #if _MSC_VER < 1900
 #define snprintf _snprintf_s
 #endif
