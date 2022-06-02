@@ -724,10 +724,20 @@ void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
         int deltaalt = pos.GetFlightLevel() - oldpos.GetFlightLevel();
         int deltaT = oldpos.GetReceivedTime() - pos.GetReceivedTime();
         float vz = 0.0f;
-        if (deltaT >0) {
-            vz = abs(deltaalt) * (60.0f / deltaT);
-        }
+        if (deltaT >0)
+            vz = deltaalt * (60.0f / deltaT);
+
         j["vz"] = vz;
+
+        // Turning rate calc
+        CRadarTargetPositionData oldpos = RadarTarget.GetPreviousPosition(pos);
+        int deltaHdg = pos.GetReportedHeading() - oldpos.GetReportedHeading();
+        int deltaT = oldpos.GetReceivedTime() - pos.GetReceivedTime();
+        float hdg_rate = 0.0f;
+        if (deltaT >0)
+            hdg_rate = deltaHdg * (60.0f / deltaT);
+        
+        j["hdg_rate"] = hdg_rate;
 
         
         webSocket.send(std::string(j.dump()));
