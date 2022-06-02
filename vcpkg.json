@@ -1,12 +1,13 @@
 {
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
     "name": "cofrance",
-    "version": "1.5.1",
+    "version": "1.7.0",
     "dependencies": [
         "openssl",
         "curl",
         "nlohmann-json",
         "cpp-httplib",
-        "toml11"
+        "toml11",
+        "ixwebsocket"
     ]
   }
