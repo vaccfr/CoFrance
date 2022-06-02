@@ -33,6 +33,9 @@ max_jobs: 1
 # Build worker image (VM template)
 os: Visual Studio 2019
 
+cache:
+  - c:\Tools\vcpkg\installed\ -> appveyor.yml
+
 #---------------------------------#
 #       build configuration       #
 #---------------------------------#
@@ -42,7 +45,6 @@ install:
   - cmd: cd C:\Tools\vcpkg
   - cmd: git pull
   - cmd: .\bootstrap-vcpkg.bat
-  - cmd: echo.set(VCPKG_BUILD_TYPE release)>> .\triplets\x86-windows-static.cmake
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - cmd: git submodule update --init --recursive
   - cmd: vcpkg install --triplet=x86-windows-static
@@ -63,8 +65,7 @@ after_build:
   - cmd: cp Release\CoFrance.dll CoFrance-nightly\
   - cmd: 7z a CoFrance-nightly-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\CoFrance-nightly\
 
-cache:
-  - c:\Tools\vcpkg\installed\
+
 
 #---------------------------------#
 #      artifacts configuration    #
