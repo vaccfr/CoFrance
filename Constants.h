@@ -60,6 +60,9 @@ namespace CoFranceCharacters {
     const string Star = "§";
     const string Losange = "÷";
     const string Pen = "µ";
+    const string ClearedVisualIndicator = "©";
+    const string ClearedAPPIndicator = "®";
+    const string DatalinkIndicator = "ß";
 }
 
 namespace StaticColours {
