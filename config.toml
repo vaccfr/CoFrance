@@ -37,8 +37,8 @@ disable_level = 3000
 level_reduced_sep = 14500
 time_to_extrapolate = 100
 altitude_sep = 700
-altitude_coarse_filter = 15000;
-distance_coarse_filter = 70;
+altitude_coarse_filter = 15000
+distance_coarse_filter = 70
 
 comment = "LFEE definitions"
 
