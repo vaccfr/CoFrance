@@ -93,7 +93,7 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 			
 			alt = rt.GetPosition().GetPressureAltitude();
 			alt_conflicting = conflicting.GetPosition().GetPressureAltitude();
-			current_horiz_distance = rt.GetPosition().GetPosition().DistanceTo(conflicting.GetPosition().GetPosition();
+			current_horiz_distance = rt.GetPosition().GetPosition().DistanceTo(conflicting.GetPosition().GetPosition());
 			current_vert_distance = abs(alt - alt_conflicting);
 
 			// Coarse filter on alt/dist difference (to avoid unecessary extrapolation on obviously separated traffics)
