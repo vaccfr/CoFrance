@@ -60,8 +60,8 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 		{
 			int separation_distance = high_level_sep;
 			int extrapolationTime = time_to_extrapolate;
-			int current_horiz_distance = 0;
-			int current_vert_distance = 0;
+			double current_horiz_distance = 0;
+			double current_vert_distance = 0;
 			int vz = 0;
 			int vz_conflicting = 0;
 			int alt = 0;
@@ -129,7 +129,7 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 					}
 					else if (dt > 0)
 					{
-						vz = dalt /dt;
+						vz = (dalt * 60) /dt;
 					}
 					
 					if (dalt_conflicting < 10)
@@ -138,7 +138,7 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 					}
 					else if (dt_conflicting > 0)
 					{
-						vz_conflicting = dalt_conflicting / dt_conflicting;
+						vz_conflicting = (dalt_conflicting * 60) / dt_conflicting;
 					}
 				}	
 			// Coarse filters based on altitude and vertical speed
