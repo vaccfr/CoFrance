@@ -9,6 +9,9 @@ CSTCA::CSTCA(toml::value CurrentConfig)
 	this->level_reduced_sep = toml::find<int>(CurrentConfig, "stca", "level_reduced_sep");
 	this->time_to_extrapolate = toml::find<int>(CurrentConfig, "stca", "time_to_extrapolate");
 	this->altitude_sep = toml::find<int>(CurrentConfig, "stca", "altitude_sep");
+	//this->altitude_coarse_filter = toml::find<int>(CurrentConfig, "stca", "altitude_coarse_filter");
+	//this->distance_coarse_filter = toml::find<int>(CurrentConfig, "stca", "distance_coarse_filter");
+	
 }
 
 
@@ -57,15 +60,15 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 		{
 			int separation_distance = high_level_sep;
 			int extrapolationTime = time_to_extrapolate;
+			double current_horiz_distance = 0;
+			int current_vert_distance = 0;
+			int vz = 0;
+			int vz_conflicting = 0;
+			int alt = 0;
+			int alt_conflicting = 0;
 
 			if (rt.GetCallsign() == conflicting.GetCallsign())
 				continue;
-
-			if (rt.GetPosition().GetPressureAltitude() <= level_reduced_sep
-				&& conflicting.GetPosition().GetPressureAltitude() <= level_reduced_sep)
-			{
-				separation_distance = low_level_sep;
-			}
 
 			if (conflicting.GetPosition().GetRadarFlags() == EuroScopePlugIn::RADAR_POSITION_PRIMARY)
 				continue;
@@ -81,9 +84,27 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 				if (conflicting.GetCorrelatedFlightPlan().GetFlightPlanData().GetPlanType()[0] == 'V')
 					continue;
 			}
+			
+			if (rt.GetPosition().GetPressureAltitude() <= level_reduced_sep
+				&& conflicting.GetPosition().GetPressureAltitude() <= level_reduced_sep)
+			{
+				separation_distance = low_level_sep;
+			}
 
-			if (rt.GetPosition().GetPosition().DistanceTo(conflicting.GetPosition().GetPosition()) < separation_distance &&
-				abs(rt.GetPosition().GetPressureAltitude() - conflicting.GetPosition().GetPressureAltitude()) < altitude_sep)
+			alt = rt.GetPosition().GetPressureAltitude();
+			alt_conflicting = conflicting.GetPosition().GetPressureAltitude();
+			current_horiz_distance = rt.GetPosition().GetPosition().DistanceTo(conflicting.GetPosition().GetPosition());
+			current_vert_distance = abs(alt - alt_conflicting);
+
+			// Coarse filter on alt/dist difference (to avoid unecessary extrapolation on obviously separated traffics)
+			if (current_vert_distance > altitude_coarse_filter)
+				continue;
+			if ( current_horiz_distance > distance_coarse_filter)
+				continue;
+
+			// Are the traffics already in conflict ?
+			if (current_vert_distance < altitude_sep &&
+				current_horiz_distance < separation_distance)
 			{
 				if (std::find(Alerts.begin(), Alerts.end(), rt.GetCallsign()) == Alerts.end())
 					Alerts.push_back(rt.GetCallsign());
@@ -92,38 +113,58 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 				continue;
 			}
 
+			// Compute vertical speed, with filter on low altitude deviation
+			if (rt.GetPreviousPosition(rt.GetPosition()).IsValid() &&
+					conflicting.GetPreviousPosition(conflicting.GetPosition()).IsValid())
+				{
+					int dalt = alt - rt.GetPreviousPosition(rt.GetPosition()).GetPressureAltitude();
+					int dalt_conflicting = alt_conflicting - conflicting.GetPreviousPosition(conflicting.GetPosition()).GetPressureAltitude();
+
+					int dt = rt.GetPreviousPosition(rt.GetPosition()).GetReceivedTime() - rt.GetPosition().GetReceivedTime();
+					int dt_conflicting = conflicting.GetPreviousPosition(conflicting.GetPosition()).GetReceivedTime() - conflicting.GetPosition().GetReceivedTime();
+
+					if (dalt < 10)
+					{
+						vz = 0;
+					}
+					else if (dt > 0)
+					{
+						vz = (dalt * 60) /dt;
+					}
+					
+					if (dalt_conflicting < 10)
+					{
+						vz_conflicting = 0;
+					}
+					else if (dt_conflicting > 0)
+					{
+						vz_conflicting = (dalt_conflicting * 60) / dt_conflicting;
+					}
+				}	
+			// Coarse filters based on altitude and vertical speed
+			
+			// If we are stable or climbing and above comflicting, no risk if conflicting is stable or descending
+			if (vz >= 0 && alt > ( alt_conflicting + 2000 ) && vz_conflicting <= 0)
+				continue;
+			// If we are stable or descending and below comflicting, no risk if conflicting is stable or climbing
+			if (vz <= 0 && alt < ( alt_conflicting - 2000 ) && vz_conflicting >= 0)
+				continue;
+
+			// Faire un calcul en vectoriel pour voir le rapprochement (ou pas)
+
 			for (int i = 10; i <= time_to_extrapolate; i += 10)
 			{
 
 				CPosition ex1 = Extrapolate(rt.GetPosition().GetPosition(), rt.GetTrackHeading(), rt.GetPosition().GetReportedGS() * 0.000277778 * i);
 				CPosition ex2 = Extrapolate(conflicting.GetPosition().GetPosition(), conflicting.GetTrackHeading(), conflicting.GetPosition().GetReportedGS() * 0.000277778 * i);
 
-				int alt1 = rt.GetPosition().GetPressureAltitude();
-				int alt2 = conflicting.GetPosition().GetPressureAltitude();
+				int alt1 = alt;
+				int alt2 = alt_conflicting;
 
-				if (rt.GetPreviousPosition(rt.GetPosition()).IsValid() &&
-					conflicting.GetPreviousPosition(conflicting.GetPosition()).IsValid())
+				if (vz != 0 || vz_conflicting != 0)
 				{
-					int dalt1 = alt1 - rt.GetPreviousPosition(rt.GetPosition()).GetPressureAltitude();
-					int dalt2 = alt2 - conflicting.GetPreviousPosition(conflicting.GetPosition()).GetPressureAltitude();
-
-					int dt1 = rt.GetPreviousPosition(rt.GetPosition()).GetReceivedTime() - rt.GetPosition().GetReceivedTime();
-					int dt2 = conflicting.GetPreviousPosition(conflicting.GetPosition()).GetReceivedTime() - conflicting.GetPosition().GetReceivedTime();
-
-					int vz1 = 0;
-					int vz2 = 0;
-
-
-					if (dt1 > 0 && dt2 > 0)
-					{
-						vz1 = dalt1 * (i / dt1);
-						vz2 = dalt2 * (i / dt2);
-					}
-
-					if (abs(dalt1) >= 10)
-						alt1 += (vz1 / 60) * i;
-					if (abs(dalt2) >= 10)
-						alt2 += (vz2 / 60) * i;
+					alt1 += (vz * i) / 60;
+					alt2 += (vz_conflicting * i) / 60;
 				}
 
 				if (ex1.DistanceTo(ex2) < separation_distance &&
