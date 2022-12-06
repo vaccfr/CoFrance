@@ -9,8 +9,8 @@ CSTCA::CSTCA(toml::value CurrentConfig)
 	this->level_reduced_sep = toml::find<int>(CurrentConfig, "stca", "level_reduced_sep");
 	this->time_to_extrapolate = toml::find<int>(CurrentConfig, "stca", "time_to_extrapolate");
 	this->altitude_sep = toml::find<int>(CurrentConfig, "stca", "altitude_sep");
-	this->altitude_coarse_filter= toml::find<int>(CurrentConfig, "stca", "altitude_coarse_filter");
-	this->distance_coarse_filter = toml::find<int>(CurrentConfig, "stca", "distance_coarse_filter");
+	//this->altitude_coarse_filter = toml::find<int>(CurrentConfig, "stca", "altitude_coarse_filter");
+	//this->distance_coarse_filter = toml::find<int>(CurrentConfig, "stca", "distance_coarse_filter");
 	
 }
 
@@ -61,7 +61,7 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 			int separation_distance = high_level_sep;
 			int extrapolationTime = time_to_extrapolate;
 			double current_horiz_distance = 0;
-			double current_vert_distance = 0;
+			int current_vert_distance = 0;
 			int vz = 0;
 			int vz_conflicting = 0;
 			int alt = 0;
@@ -69,12 +69,6 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 
 			if (rt.GetCallsign() == conflicting.GetCallsign())
 				continue;
-
-			if (rt.GetPosition().GetPressureAltitude() <= level_reduced_sep
-				&& conflicting.GetPosition().GetPressureAltitude() <= level_reduced_sep)
-			{
-				separation_distance = low_level_sep;
-			}
 
 			if (conflicting.GetPosition().GetRadarFlags() == EuroScopePlugIn::RADAR_POSITION_PRIMARY)
 				continue;
@@ -91,6 +85,12 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 					continue;
 			}
 			
+			if (rt.GetPosition().GetPressureAltitude() <= level_reduced_sep
+				&& conflicting.GetPosition().GetPressureAltitude() <= level_reduced_sep)
+			{
+				separation_distance = low_level_sep;
+			}
+
 			alt = rt.GetPosition().GetPressureAltitude();
 			alt_conflicting = conflicting.GetPosition().GetPressureAltitude();
 			current_horiz_distance = rt.GetPosition().GetPosition().DistanceTo(conflicting.GetPosition().GetPosition());
@@ -99,7 +99,7 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 			// Coarse filter on alt/dist difference (to avoid unecessary extrapolation on obviously separated traffics)
 			if (current_vert_distance > altitude_coarse_filter)
 				continue;
-			if (current_horiz_distance > distance_coarse_filter)
+			if ( current_horiz_distance > distance_coarse_filter)
 				continue;
 
 			// Are the traffics already in conflict ?
@@ -142,14 +142,12 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 					}
 				}	
 			// Coarse filters based on altitude and vertical speed
-			// If they are both stable, no conflict
-			if (vz == 0 && vz_conflicting == 0)
-				continue;
+			
 			// If we are stable or climbing and above comflicting, no risk if conflicting is stable or descending
-			if (vz >= 0 && alt > alt_conflicting && vz_conflicting <= 0)
+			if (vz >= 0 && alt > ( alt_conflicting + 2000 ) && vz_conflicting <= 0)
 				continue;
 			// If we are stable or descending and below comflicting, no risk if conflicting is stable or climbing
-			if (vz <= 0 && alt < alt_conflicting && vz_conflicting >= 0)
+			if (vz <= 0 && alt < ( alt_conflicting - 2000 ) && vz_conflicting >= 0)
 				continue;
 
 			// Faire un calcul en vectoriel pour voir le rapprochement (ou pas)
@@ -165,8 +163,8 @@ void CSTCA::OnRefresh(CPlugIn* pl)
 
 				if (vz != 0 || vz_conflicting != 0)
 				{
-					alt1 += (vz / 60) * i;
-					alt2 += (vz_conflicting / 60) * i;
+					alt1 += (vz * i) / 60;
+					alt2 += (vz_conflicting * i) / 60;
 				}
 
 				if (ex1.DistanceTo(ex2) < separation_distance &&
