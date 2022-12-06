@@ -21,22 +21,22 @@ ocl_tooltip=[255, 246, 216]
 
 [ac_symbols]
 size = 5
-number_of_trails=8
+number_of_trails = 8
 
 [sep]
-warning_threshold=9
-lookup_time=30
+warning_threshold = 9
+lookup_time = 30
 
 [menu]
 menu_position = 490
 
 [stca]
-high_level_sep = 4
-low_level_sep = 2
-disable_level = 3000
+high_level_sep = 5
+low_level_sep = 3
+disable_level = 3500
 level_reduced_sep = 14500
 time_to_extrapolate = 100
-altitude_sep = 700
+altitude_sep = 900
 altitude_coarse_filter = 15000
 distance_coarse_filter = 70
 
