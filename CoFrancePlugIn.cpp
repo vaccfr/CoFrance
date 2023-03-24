@@ -734,7 +734,7 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
 
     /*try {
         if (fromWeb) {
-            httplib::Client cli(CONFIG_ONLINE_URL_BASE);
+            httplib::Client cli(API_URL_BASE);
             if (auto res = cli.Get(CONFIG_ONLINE_STAND_API_URL_PATH)) {
                 if (res->status == 200) {
                     std::istringstream is(res->body, std::ios_base::binary | std::ios_base::in);
@@ -818,7 +818,7 @@ string CoFrancePlugIn::SendCPDLCEvent(string ac_callsign, int event_type, string
 string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin, string destination, string wtc)
 {
     try {
-        httplib::Client cli(CONFIG_ONLINE_URL_BASE);
+        httplib::Client cli(API_URL_BASE);
         httplib::Params params;
         params.emplace("callsign", callsign);
         params.emplace("dep", origin);
