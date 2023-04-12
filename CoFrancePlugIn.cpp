@@ -677,13 +677,15 @@ void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
     if (ScratchPad.find("STAND=") != std::string::npos)
         return;
 
+    DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", "Scratchpad OK for " + string(CorrFp.GetCallsign()), false, false, false, false, false);
+
     
     if (std::find(StandApiAvailableFor.begin(), StandApiAvailableFor.end(), string(CorrFp.GetFlightPlanData().GetDestination())) != StandApiAvailableFor.end()) {
 
         if (CorrFp.GetDistanceToDestination() < 10) {
-           
+            DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", "Distance OK, Checking stand for " + string(CorrFp.GetCallsign()), false, false, false, false, false);
             if (PendingStands.find(string(CorrFp.GetCallsign())) == PendingStands.end()) {
-                
+                DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", "Inserting " + string(CorrFp.GetCallsign()), false, false, false, false, false);
                 PendingStands.insert(std::make_pair(string(CorrFp.GetCallsign()), 
                     async(&CoFrancePlugIn::LoadRemoteStandAssignment, this, string(CorrFp.GetCallsign()), string(CorrFp.GetFlightPlanData().GetOrigin()),
                         string(CorrFp.GetFlightPlanData().GetDestination()),
@@ -825,18 +827,19 @@ string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin,
         params.emplace("arr", destination);
         params.emplace("wtc", wtc);
 
-
+        DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", "Preparing query for " + callsign, false, false, false, false, false);   
         if (auto res = cli.Post(CONFIG_ONLINE_STAND_API_QUERY_URL_PATH, params)) {
             if (res->status == 200) {
                 
                 std::istringstream is(res->body, std::ios_base::binary | std::ios_base::in);
 
                 toml::value StandData = toml::parse(is, "std::string");
-
+                DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", "Query succes for " + callsign, false, false, false, false, false);      
                 cli.stop();
                 return toml::find<string>(StandData, "data", "stand");
             }
             else {
+                DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", "Query failed (not 200) " + callsign, false, false, false, false, false);   
                 cli.stop();
                 return "NoGate";
             }
@@ -845,9 +848,8 @@ string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin,
         cli.stop();
     }
     catch (const std::exception& exc) {
-        
-    }
-
+        DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", "ERROR for" + callsign, false, false, false, false, false);   
+    }   
     return "NoGate";
 }
 
