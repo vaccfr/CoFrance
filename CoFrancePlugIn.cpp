@@ -730,9 +730,9 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading config file " + string(exc.what())).c_str(), false, false, false, false, false);
     }
 
-    //DisplayUserMessage("Message", "CoFrance PlugIn", "Reading stand API config...", false, false, false, false, false);
+    DisplayUserMessage("Message", "CoFrance PlugIn", "Reading stand API config...", false, false, false, false, false);
 
-    /*try {
+    try {
         if (fromWeb) {
             httplib::Client cli(API_URL_BASE);
             if (auto res = cli.Get(CONFIG_ONLINE_STAND_API_URL_PATH)) {
@@ -754,7 +754,7 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
     }
     catch (const std::exception& exc) {
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading stand api file " + string(exc.what())).c_str(), false, false, false, false, false);
-    }*/
+    }
 }
 
 string CoFrancePlugIn::SendCPDLCActiveAircrafts(string my_callsign, string message)
