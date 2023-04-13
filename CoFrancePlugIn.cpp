@@ -828,7 +828,11 @@ string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin,
         params.emplace("arr", destination);
         params.emplace("wtc", wtc);
 
-        DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", string("Preparing API query for " + callsign).c_str(), false, false, false, false, false);
+        DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", string("Preparing API query").c_str(), false, false, false, false, false);
+        DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", string("callsign: " + callsign).c_str(), false, false, false, false, false);
+        DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", string("dep: " + origin).c_str(), false, false, false, false, false);
+        DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", string("arr " + destination).c_str(), false, false, false, false, false);
+        DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", string("wtc " + wtc).c_str(), false, false, false, false, false);
         if (auto res = cli.Post(CONFIG_ONLINE_STAND_API_QUERY_URL_PATH, params)) {
             if (res->status == 200) {
                 
@@ -841,6 +845,7 @@ string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin,
                 return toml::find<string>(StandData, "data", "stand");
             }
             else {
+                DisplayUserMessage("Message", "[STANDS] CoFrance PlugIn", string("API Query didn't return 200 for " + callsign).c_str(), false, false, false, false, false);
                 cli.stop();
                 return "NoGate";
             }
