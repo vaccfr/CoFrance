@@ -40,14 +40,18 @@ public:
 
     void OnRadarTargetPositionUpdate(CRadarTarget RadarTarget);
 
+    void OnFlightPlanDisconnect(CFlightPlan FlightPlan);
+
     toml::value CoFranceConfig;
     vector<string> StandApiAvailableFor;
     map<string, future<string>> PendingStands;
+    map<string, std::chrono::system_clock::time_point> AssignedStandTime;
     string DetailedAircraft;
     string DllPath;
     map<string, string> ConflictGroups;
     bool CanLoadRadarScreen = true;
     bool Blink = false;
+    double StandAssignmentRefresh = 30;
 
     CSTCA *Stca = nullptr;
 
