@@ -83,6 +83,17 @@ bool CoFrancePlugIn::OnCompileCommand(const char* sCommandLine)
         return true;
     }
 
+    if (strcmp(sCommandLine, ".cofrance stand") == 0) {
+        StandAssignerEnabled = !StandAssignerEnabled;
+        if (StandAssignerEnabled) {
+            DisplayUserMessage("CoFrance", "Stand", "Auto assigner enabled", true, true, false, true, false);
+        }
+        else {
+            DisplayUserMessage("CoFrance", "Stand", "Auto assigner disabled", true, true, false, true, false);
+        }
+        return true;
+    }
+
     return false;
 }
 
@@ -672,36 +683,37 @@ void CoFrancePlugIn::OnFlightPlanControllerAssignedDataUpdate(CFlightPlan Flight
 void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 {
 
-    CFlightPlan CorrFp = RadarTarget.GetCorrelatedFlightPlan();
-    bool ToRefresh = false;
-    if (!CorrFp.IsValid() || !CorrFp.GetTrackingControllerIsMe())
-        return;
+    if (StandAssignerEnabled) {
+        CFlightPlan CorrFp = RadarTarget.GetCorrelatedFlightPlan();
+        bool ToRefresh = false;
+        if (!CorrFp.IsValid() || !CorrFp.GetTrackingControllerIsMe())
+            return;
 
-    string ScratchPad = string(CorrFp.GetControllerAssignedData().GetScratchPadString());
+        string ScratchPad = string(CorrFp.GetControllerAssignedData().GetScratchPadString());
 
-    // Check if we need to refresh the previouly assigned stand
-    if (AssignedStandTime.find(string(CorrFp.GetCallsign())) != AssignedStandTime.end()) {
-        std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - AssignedStandTime[string(CorrFp.GetCallsign())];
-        if (elapsed_seconds.count() > StandAssignmentRefresh) {
-            ToRefresh = true;
+        // Check if we need to refresh the previouly assigned stand
+        if (AssignedStandTime.find(string(CorrFp.GetCallsign())) != AssignedStandTime.end()) {
+            std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - AssignedStandTime[string(CorrFp.GetCallsign())];
+            if (elapsed_seconds.count() > StandAssignmentRefresh) {
+                ToRefresh = true;
+            }
         }
-    }
 
-    // There is already an assigned stand
-    if (ScratchPad.find("STAND=") != std::string::npos && !ToRefresh)
-        return;
+        // There is already an assigned stand
+        if (ScratchPad.find("STAND=") != std::string::npos && !ToRefresh)
+            return;
 
-    
-    if (std::find(StandApiAvailableFor.begin(), StandApiAvailableFor.end(), string(CorrFp.GetFlightPlanData().GetDestination())) != StandApiAvailableFor.end()) {
+        if (std::find(StandApiAvailableFor.begin(), StandApiAvailableFor.end(), string(CorrFp.GetFlightPlanData().GetDestination())) != StandApiAvailableFor.end()) {
 
-        if (CorrFp.GetDistanceToDestination() < 10) {
-           
-            if (PendingStands.find(string(CorrFp.GetCallsign())) == PendingStands.end()) {
-                DisplayUserMessage("CoFrance", "Stand", string("Requesting stand for " + string(CorrFp.GetCallsign())).c_str(), true, false, false, false, false);
-                PendingStands.insert(std::make_pair(string(CorrFp.GetCallsign()), 
-                    async(&CoFrancePlugIn::LoadRemoteStandAssignment, this, string(CorrFp.GetCallsign()), string(CorrFp.GetFlightPlanData().GetOrigin()),
-                        string(CorrFp.GetFlightPlanData().GetDestination()),
-                        string(string("") + CorrFp.GetFlightPlanData().GetAircraftWtc()))));
+            if (CorrFp.GetDistanceToDestination() < 10) {
+
+                if (PendingStands.find(string(CorrFp.GetCallsign())) == PendingStands.end()) {
+                    DisplayUserMessage("CoFrance", "Stand", string("Requesting stand for " + string(CorrFp.GetCallsign())).c_str(), true, false, false, false, false);
+                    PendingStands.insert(std::make_pair(string(CorrFp.GetCallsign()),
+                        async(&CoFrancePlugIn::LoadRemoteStandAssignment, this, string(CorrFp.GetCallsign()), string(CorrFp.GetFlightPlanData().GetOrigin()),
+                            string(CorrFp.GetFlightPlanData().GetDestination()),
+                            string(string("") + CorrFp.GetFlightPlanData().GetAircraftWtc()))));
+                }
             }
         }
     }
