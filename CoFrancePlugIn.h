@@ -64,6 +64,8 @@ public:
 
     string LoadOCLData();
 
+    string BuildScratchPadWithStand(string currentScratchPad, string stand);
+
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
 

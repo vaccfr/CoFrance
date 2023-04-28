@@ -503,7 +503,7 @@ void CoFrancePlugIn::OnTimer(int Counter)
             std::string stand = it->second.get();
 
             string ScratchPad = FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().GetScratchPadString();
-            ScratchPad = "STAND=" + stand + " " + ScratchPad;
+            ScratchPad = BuildScratchPadWithStand(ScratchPad, stand);
             FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().SetScratchPadString(ScratchPad.c_str());
             if (AssignedStandTime.find(it->first.c_str()) != AssignedStandTime.end()) {
                 AssignedStandTime[it->first.c_str()] = std::chrono::system_clock::now();
@@ -911,4 +911,25 @@ string CoFrancePlugIn::LoadOCLData()
     return "[]";
 
     //return "[ { \"callsign\": \"BER1PE\", \"status\": \"CLEARED\", \"nat\": \"A\", \"fix\": \"MALOT\", \"level\": \"320\", \"mach\": \"0.89\", \"estimating_time\": \"1921\", \"clearance_issued\": \"2021-03-26 00:21:19\", \"extra_info\": \"CROSS MALOT NOT BEFORE 1925\" }, { \"callsign\":\"ADB3908\", \"status\":\"PENDING\", \"nat\":\"RR\", \"fix\":\"PORTI\", \"level\": \"350\", \"mach\": \"0.82\", \"estimating_time\":\"18:41\", \"clearance_issued\":null, \"extra_info\":null } ]";
+}
+
+string CoFrancePlugIn::BuildScratchPadWithStand(string currentScratchPad, string stand)
+{
+    std::size_t standBegin, standEnd;
+    string cleanScratchPad;
+
+    standBegin = currentScratchPad.find("STAND=");
+    if (standBegin != std::string::npos) {
+        standEnd = currentScratchPad.find(" ", standBegin);
+        if (standEnd != std::string::npos) {
+            cleanScratchPad = currentScratchPad.replace(standBegin, standEnd - standBegin + 1, "");
+        }
+        else {
+            cleanScratchPad = currentScratchPad.replace(standBegin, currentScratchPad.size() - standBegin, "");
+        }
+    }
+    else {
+        cleanScratchPad = currentScratchPad;
+    }
+    return "STAND=" + stand + " " + cleanScratchPad;
 }
