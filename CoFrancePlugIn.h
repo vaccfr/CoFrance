@@ -51,6 +51,7 @@ public:
     map<string, string> ConflictGroups;
     bool CanLoadRadarScreen = true;
     bool Blink = false;
+    bool Debug = false;
     bool StandAssignerEnabled = true;
     double StandAssignmentRefresh = 30;
 

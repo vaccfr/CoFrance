@@ -83,6 +83,17 @@ bool CoFrancePlugIn::OnCompileCommand(const char* sCommandLine)
         return true;
     }
 
+     if (strcmp(sCommandLine, ".cofrance debug") == 0) {
+        Debug = !Debug;
+        if (Debug) {
+            DisplayUserMessage("CoFrance", "Debug", "Debug enabled", true, true, false, true, false);
+        }
+        else {
+            DisplayUserMessage("CoFrance", "Debug", "Debug disabled", true, true, false, true, false);
+        }
+        return true;
+    }
+
     if (strcmp(sCommandLine, ".cofrance stand") == 0) {
         StandAssignerEnabled = !StandAssignerEnabled;
         if (StandAssignerEnabled) {
@@ -511,7 +522,9 @@ void CoFrancePlugIn::OnTimer(int Counter)
             else {
                 AssignedStandTime.insert(make_pair(it->first.c_str(), std::chrono::system_clock::now()));
             }
-            DisplayUserMessage("CoFrance", "Stand", string("Recieved stand " + stand + " for " + it->first.c_str()).c_str(), true, false, false, false, false);
+            if (Debug) {
+                DisplayUserMessage("CoFrance", "Stand", string("Recieved stand " + stand + " for " + it->first.c_str()).c_str(), true, false, false, false, false);
+            }
             must_delete = true;
         }
 
@@ -708,7 +721,9 @@ void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
             if (CorrFp.GetDistanceToDestination() < 10) {
 
                 if (PendingStands.find(string(CorrFp.GetCallsign())) == PendingStands.end()) {
-                    DisplayUserMessage("CoFrance", "Stand", string("Requesting stand for " + string(CorrFp.GetCallsign())).c_str(), true, false, false, false, false);
+                    if (Debug) {
+                        DisplayUserMessage("CoFrance", "Stand", string("Requesting stand for " + string(CorrFp.GetCallsign())).c_str(), true, false, false, false, false);
+                    }
                     PendingStands.insert(std::make_pair(string(CorrFp.GetCallsign()),
                         async(&CoFrancePlugIn::LoadRemoteStandAssignment, this, string(CorrFp.GetCallsign()), string(CorrFp.GetFlightPlanData().GetOrigin()),
                             string(CorrFp.GetFlightPlanData().GetDestination()),
