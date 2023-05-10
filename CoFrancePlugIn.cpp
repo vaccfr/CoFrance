@@ -55,6 +55,9 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 
     RegisterTagItemFunction("Open ASP Popup", CoFranceTags::FUNCTION_OPEN_ASP);
 
+    RegisterTagItemType("Stand", CoFranceTags::STAND);
+    RegisterTagItemFunction("Stand popup", CoFranceTags::FUNCTION_STAND_MENU);
+
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
 
@@ -162,9 +165,9 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
             aspeed = "m";
 
             aspeed += "." + to_string(FlightPlan.GetControllerAssignedData().GetAssignedMach());
-            if (string(FlightPlan.GetControllerAssignedData().GetFlightStripAnnotation(2)) == string("+"))
+            if (string(FlightPlan.GetControllerAssignedData().GetFlightStripAnnotation(CoFranceTags::ANNOTATION_SPEED_SIGN)) == string("+"))
                 aspeed += "+";
-            if (string(FlightPlan.GetControllerAssignedData().GetFlightStripAnnotation(2)) == string("-"))
+            if (string(FlightPlan.GetControllerAssignedData().GetFlightStripAnnotation(CoFranceTags::ANNOTATION_SPEED_SIGN)) == string("-"))
                 aspeed += "-";
         } else if (FlightPlan.GetControllerAssignedData().GetAssignedSpeed() != 0) {
             aspeed = "k";
@@ -503,6 +506,12 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
 
     }
 
+    if (ItemCode == CoFranceTags::STAND) {
+        if (!FlightPlan.IsValid())
+            return;
+        string Stand = FlightPlan.GetControllerAssignedData().GetFlightStripAnnotation(CoFranceTags::ANNOTATION_STAND);
+        strcpy_s(sItemString, 16, Stand.c_str());
+    }
 }
 
 void CoFrancePlugIn::OnTimer(int Counter)
@@ -511,11 +520,8 @@ void CoFrancePlugIn::OnTimer(int Counter)
     {
         bool must_delete = false;
         if (it->second.valid() && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-            std::string stand = it->second.get();
-
-            string ScratchPad = FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().GetScratchPadString();
-            ScratchPad = BuildScratchPadWithStand(ScratchPad, stand);
-            FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().SetScratchPadString(ScratchPad.c_str());
+            string stand = it->second.get();
+            FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().SetFlightStripAnnotation(CoFranceTags::ANNOTATION_STAND, stand.c_str());
             if (AssignedStandTime.find(it->first.c_str()) != AssignedStandTime.end()) {
                 AssignedStandTime[it->first.c_str()] = std::chrono::system_clock::now();
             }
@@ -661,6 +667,15 @@ void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POI
         }
     }
 
+    if (FunctionId == CoFranceTags::FUNCTION_STAND_MENU) {
+		OpenPopupList(Area, "Stand", 1);
+		AddPopupListElement("Clear", "", CoFranceTags::FUNCTION_STAND_CLEAR, false, POPUP_ELEMENT_NO_CHECKBOX, false);
+    }
+
+    if (FunctionId == CoFranceTags::FUNCTION_STAND_CLEAR) {
+		FlightPlanSelectASEL().GetControllerAssignedData().SetFlightStripAnnotation(CoFranceTags::ANNOTATION_STAND, "");
+    }
+
 }
 
 void CoFrancePlugIn::OnFlightPlanControllerAssignedDataUpdate(CFlightPlan FlightPlan, int DataType)
@@ -698,22 +713,22 @@ void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
 
     if (StandAssignerEnabled) {
         CFlightPlan CorrFp = RadarTarget.GetCorrelatedFlightPlan();
-        bool ToRefresh = false;
-        if (!CorrFp.IsValid() || !CorrFp.GetTrackingControllerIsMe())
+        bool toRefresh = false;
+        if (!CorrFp.IsValid() || !ControllerMyself().IsController())
             return;
 
-        string ScratchPad = string(CorrFp.GetControllerAssignedData().GetScratchPadString());
+        string stand = string(CorrFp.GetControllerAssignedData().GetFlightStripAnnotation(CoFranceTags::ANNOTATION_STAND));
 
         // Check if we need to refresh the previouly assigned stand
         if (AssignedStandTime.find(string(CorrFp.GetCallsign())) != AssignedStandTime.end()) {
             std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - AssignedStandTime[string(CorrFp.GetCallsign())];
             if (elapsed_seconds.count() > StandAssignmentRefresh) {
-                ToRefresh = true;
+                toRefresh = true;
             }
         }
 
         // There is already an assigned stand
-        if (ScratchPad.find("STAND=") != std::string::npos && !ToRefresh)
+        if (!stand.empty() && !toRefresh)
             return;
 
         if (std::find(StandApiAvailableFor.begin(), StandApiAvailableFor.end(), string(CorrFp.GetFlightPlanData().GetDestination())) != StandApiAvailableFor.end()) {
@@ -926,25 +941,4 @@ string CoFrancePlugIn::LoadOCLData()
     return "[]";
 
     //return "[ { \"callsign\": \"BER1PE\", \"status\": \"CLEARED\", \"nat\": \"A\", \"fix\": \"MALOT\", \"level\": \"320\", \"mach\": \"0.89\", \"estimating_time\": \"1921\", \"clearance_issued\": \"2021-03-26 00:21:19\", \"extra_info\": \"CROSS MALOT NOT BEFORE 1925\" }, { \"callsign\":\"ADB3908\", \"status\":\"PENDING\", \"nat\":\"RR\", \"fix\":\"PORTI\", \"level\": \"350\", \"mach\": \"0.82\", \"estimating_time\":\"18:41\", \"clearance_issued\":null, \"extra_info\":null } ]";
-}
-
-string CoFrancePlugIn::BuildScratchPadWithStand(string currentScratchPad, string stand)
-{
-    std::size_t standBegin, standEnd;
-    string cleanScratchPad;
-
-    standBegin = currentScratchPad.find("STAND=");
-    if (standBegin != std::string::npos) {
-        standEnd = currentScratchPad.find(" ", standBegin);
-        if (standEnd != std::string::npos) {
-            cleanScratchPad = currentScratchPad.replace(standBegin, standEnd - standBegin + 1, "");
-        }
-        else {
-            cleanScratchPad = currentScratchPad.replace(standBegin, currentScratchPad.size() - standBegin, "");
-        }
-    }
-    else {
-        cleanScratchPad = currentScratchPad;
-    }
-    return "STAND=" + stand + " " + cleanScratchPad;
 }

@@ -66,10 +66,10 @@ public:
 			if (aspeed != 0 && aspeed % 10 == 1)
 				min_active = true;
 
-			if (mach != 0 && string(fp.GetControllerAssignedData().GetFlightStripAnnotation(2)) == string("-"))
+			if (mach != 0 && string(fp.GetControllerAssignedData().GetFlightStripAnnotation(CoFranceTags::ANNOTATION_SPEED_SIGN)) == string("-"))
 				max_active = true;
 
-			if (mach != 0 && string(fp.GetControllerAssignedData().GetFlightStripAnnotation(2)) == string("+"))
+			if (mach != 0 && string(fp.GetControllerAssignedData().GetFlightStripAnnotation(CoFranceTags::ANNOTATION_SPEED_SIGN)) == string("+"))
 				min_active = true;
 
 			initialise = false;
