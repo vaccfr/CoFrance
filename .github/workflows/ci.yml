@@ -1,0 +1,62 @@
+name: Vector Audio CI
+
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - v*
+  workflow_dispatch:
+    
+
+concurrency: 
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Release
+  VECTOR_SECRET: Dev
+
+jobs:
+  build-x86:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: vcpkg install
+        run: |
+          vcpkg install --triplet=x86-windows-static
+          vcpkg integrate install
+      - name: Edit version
+        shell: pwsh
+        run: |
+          (Get-Content Constants.h).replace('@appveyor_build', ${{ github.sha }}) | Set-Content  Constants.h
+          (Get-Content CoFrance.rc).replace('@appveyor_build', ${{ github.sha }}) | Set-Content  CoFrance.rc
+      - name: Build
+        run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x86
+      - uses: actions/upload-artifact@v3
+        with:
+          name: CoFrance.x86-${{ github.sha }}.dll
+          path: Release/CoFrance.x86.dll
+  build-x64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: vcpkg install
+        run: |
+          vcpkg install --triplet=x64-windows-static
+          vcpkg integrate install
+      - name: Edit version
+        shell: pwsh
+        run: |
+          (Get-Content Constants.h).replace('@appveyor_build', ${{ github.sha }}) | Set-Content  Constants.h
+          (Get-Content CoFrance.rc).replace('@appveyor_build', ${{ github.sha }}) | Set-Content  CoFrance.rc
+      - name: Build
+        run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x64
+      - uses: actions/upload-artifact@v3
+        with:
+          name: CoFrance.x64-${{ github.sha }}.dll
+          path: Release/CoFrance.x64.dll
