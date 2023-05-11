@@ -517,7 +517,7 @@ void CoFrancePlugIn::OnTimer(int Counter)
                 try {
                     CPDLCStatusTagMap.insert(make_pair(column[0], stoi(column[1])));
                 }
-                catch (const std::exception& exc) {
+                catch (...) {
 
                 }
             }
@@ -530,7 +530,7 @@ void CoFrancePlugIn::OnTimer(int Counter)
         try {
             SharedData::OCLData = nlohmann::json::parse(d);
         }
-        catch (std::exception &exc) {
+        catch (...) {
 
         }
     }
@@ -725,7 +725,7 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
         CanLoadRadarScreen = true;
         DisplayUserMessage("Message", "CoFrance PlugIn", "Config file loaded!", false, false, false, false, false);
     }
-    catch (const std::exception& exc) {
+    catch (...) {
         CanLoadRadarScreen = false;
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading config file " + string(exc.what())).c_str(), false, false, false, false, false);
     }
@@ -781,8 +781,8 @@ string CoFrancePlugIn::SendCPDLCActiveAircrafts(string my_callsign, string messa
 
         cli.stop();
     }
-    catch (const std::exception& exc) {
-
+    catch (...) {
+        return r;
     }
 
     return r;
@@ -808,8 +808,8 @@ string CoFrancePlugIn::SendCPDLCEvent(string ac_callsign, int event_type, string
 
         cli.stop();
     }
-    catch (const std::exception& exc) {
-
+    catch (...) {
+        return "null";
     }
 
     return "null";
@@ -844,8 +844,8 @@ string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin,
 
         cli.stop();
     }
-    catch (const std::exception& exc) {
-        
+    catch (...) {
+        return "NoGate";
     }
 
     return "NoGate";
@@ -870,7 +870,7 @@ string CoFrancePlugIn::LoadOCLData()
 
         cli.stop();
     }
-    catch (const std::exception& exc) {
+    catch (...) {
         return "[]";
     }
 

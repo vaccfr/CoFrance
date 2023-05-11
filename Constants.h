@@ -104,8 +104,8 @@ static bool HasOCL(string callsign) {
             }
         }
     }
-    catch (std::exception& exc) {
-
+    catch (...) {
+        return false;
     }
 
     return false;
@@ -120,8 +120,8 @@ static int GetOCLLevel(string callsign) {
             }
         }
     }
-    catch (std::exception& exc) {
-
+    catch (...) {
+        return 0;
     }
 
     return 0;
@@ -136,7 +136,7 @@ static string GetFullOCL(string callsign) {
             }
         }
     }
-    catch (std::exception& exc) {
+    catch (...) {
         return "";
     }
 
