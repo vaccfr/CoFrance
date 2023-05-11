@@ -21,7 +21,7 @@ jobs:
   build-x86:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
       - uses: TheMrMilchmann/setup-msvc-dev@v2
@@ -42,12 +42,12 @@ jobs:
         run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x86 /p:Configuration=Release
       - uses: actions/upload-artifact@v3
         with:
-          name: CoFrance.x86-${{ github.sha }}.dll
+          name: CoFrance.x86-${{ steps.short-sha.outputs.sha }}.dll
           path: Release/CoFrance.x86.dll
   build-x64:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
       - uses: TheMrMilchmann/setup-msvc-dev@v2
@@ -68,5 +68,5 @@ jobs:
         run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x64 /p:Configuration=Release
       - uses: actions/upload-artifact@v3
         with:
-          name: CoFrance.x64-${{ github.sha }}.dll
+          name: CoFrance.x64-${{ steps.short-sha.outputs.sha }}.dll
           path: Release/CoFrance.x64.dll
