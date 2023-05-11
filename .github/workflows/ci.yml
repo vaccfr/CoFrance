@@ -3,7 +3,7 @@ name: Vector Audio CI
 on:
   push:
     branches:
-      - main
+      - dual-arch-build
     tags-ignore:
       - v*
   workflow_dispatch:
