@@ -39,7 +39,7 @@ jobs:
           (Get-Content Constants.h).replace('@appveyor_build', '${{ steps.short-sha.outputs.sha }}') | Set-Content  Constants.h
           (Get-Content CoFrance.rc).replace('@appveyor_build', '${{ steps.short-sha.outputs.sha }}') | Set-Content  CoFrance.rc
       - name: Build
-        run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x86
+        run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x86 /p:Configuration=Release
       - uses: actions/upload-artifact@v3
         with:
           name: CoFrance.x86-${{ github.sha }}.dll
@@ -65,7 +65,7 @@ jobs:
           (Get-Content Constants.h).replace('@appveyor_build', '${{ steps.short-sha.outputs.sha }}') | Set-Content  Constants.h
           (Get-Content CoFrance.rc).replace('@appveyor_build', '${{ steps.short-sha.outputs.sha }}') | Set-Content  CoFrance.rc
       - name: Build
-        run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x64
+        run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x64 /p:Configuration=Release
       - uses: actions/upload-artifact@v3
         with:
           name: CoFrance.x64-${{ github.sha }}.dll

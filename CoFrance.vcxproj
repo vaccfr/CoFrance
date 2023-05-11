@@ -93,7 +93,7 @@
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\CoFrance.def</ModuleDefinitionFile>
       <AdditionalDependencies>lib\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile><$(OutDir)CoFrance.x86$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)CoFrance.x86$(TargetExt)</OutputFile>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -116,7 +116,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\CoFrance.def</ModuleDefinitionFile>
-      <OutputFile><$(OutDir)CoFrance.x86$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)CoFrance.x86$(TargetExt)</OutputFile>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -145,7 +145,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>.\CoFrance.def</ModuleDefinitionFile>
       <AdditionalDependencies>lib\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile><$(OutDir)CoFrance.x86$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)CoFrance.x86$(TargetExt)</OutputFile>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -174,7 +174,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>.\CoFrance.def</ModuleDefinitionFile>
       <AdditionalDependencies>lib\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile><$(OutDir)CoFrance.x64$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)CoFrance.x64$(TargetExt)</OutputFile>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
