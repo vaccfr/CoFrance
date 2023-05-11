@@ -725,7 +725,7 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
         CanLoadRadarScreen = true;
         DisplayUserMessage("Message", "CoFrance PlugIn", "Config file loaded!", false, false, false, false, false);
     }
-    catch (...) {
+    catch (std::exception &exc) {
         CanLoadRadarScreen = false;
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading config file " + string(exc.what())).c_str(), false, false, false, false, false);
     }
