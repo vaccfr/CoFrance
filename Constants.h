@@ -13,6 +13,7 @@
 
 #define CONFIG_ONLINE_URL_BASE "https://raw.githubusercontent.com"
 #define CONFIG_ONLINE_URL_PATH "/vaccfr/CoFrance/master/config.toml"
+#define API_URL_BASE "https://fire-ops.ew.r.appspot.com"
 #define CONFIG_ONLINE_STAND_API_URL_PATH "/api/cfr/stand"
 #define CONFIG_ONLINE_STAND_API_QUERY_URL_PATH "/api/cfr/stand/query"
 
@@ -39,6 +40,10 @@ namespace CoFranceTags {
     const int CPDLC_STATUS = 18;
     const int OCL_FLAG = 19;
     const int ASSIGNED_SPEED = 20;
+    const int STAND = 21;
+
+    const int ANNOTATION_SPEED_SIGN = 2;
+    const int ANNOTATION_STAND = 3;
 
     const int FUNCTION_CONFLICT_POPUP = 500;
     const int FUNCTION_HANDLE_CONFLICT_GROUP = 501;
@@ -53,6 +58,9 @@ namespace CoFranceTags {
     const int FUNCTION_ASP_TOOL_TOGGLE_M = 904;
     const int FUNCTION_ASP_TOOL_RESUME = 905;
     const int FUNCTION_ASP_TOOL_CANCEL = 906;
+
+    const int FUNCTION_STAND_MENU = 907;
+    const int FUNCTION_STAND_CLEAR = 908;
 }
 
 namespace CoFranceCharacters {

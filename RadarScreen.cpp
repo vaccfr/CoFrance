@@ -621,7 +621,7 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 		if (fp.GetTrackingControllerIsMe()) {
 			fp.GetControllerAssignedData().SetAssignedMach(0);
 			fp.GetControllerAssignedData().SetAssignedSpeed(0);
-			fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "");
+			fp.GetControllerAssignedData().SetFlightStripAnnotation(CoFranceTags::ANNOTATION_SPEED_SIGN, "");
 		}
 
 		aspPopup.Reset();
@@ -641,16 +641,16 @@ void RadarScreen::OnClickScreenObject(int ObjectType, const char* sObjectId, POI
 			if (aspPopup.is_mach) {
 				int selected = stoi(sObjectId);
 				if (aspPopup.max_active)
-					fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "-");
+					fp.GetControllerAssignedData().SetFlightStripAnnotation(CoFranceTags::ANNOTATION_SPEED_SIGN, "-");
 				else if (aspPopup.min_active)
-					fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "+");
+					fp.GetControllerAssignedData().SetFlightStripAnnotation(CoFranceTags::ANNOTATION_SPEED_SIGN, "+");
 				else
-					fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "");
+					fp.GetControllerAssignedData().SetFlightStripAnnotation(CoFranceTags::ANNOTATION_SPEED_SIGN, "");
 				fp.GetControllerAssignedData().SetAssignedMach(selected);
 			}
 			else {
 				int selected = stoi(sObjectId);
-				fp.GetControllerAssignedData().SetFlightStripAnnotation(2, "");
+				fp.GetControllerAssignedData().SetFlightStripAnnotation(CoFranceTags::ANNOTATION_SPEED_SIGN, "");
 				if (aspPopup.max_active)
 					selected--;
 				if (aspPopup.min_active)
