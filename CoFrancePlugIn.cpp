@@ -921,7 +921,7 @@ string CoFrancePlugIn::LoadOCLData()
         httplib::Client cli("https://nattrak.vatsim.net");
         cli.set_connection_timeout(0, 500000);
 
-        if (auto res = cli.Get("/pluginapi.php")) {
+        if (auto res = cli.Get("/api/plugins")) {
             if (res->status == 200) {
                 cli.stop();
                 return res->body;
