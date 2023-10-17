@@ -126,23 +126,73 @@ controller_others = ["RR", "RRE"]
 controller_not_others = ["FFW","FFN"]
 
 [[sector_vertical_limit]]
+# TH RT OT
 text = "295\r\n000"
-position = ["N049.07.00.209", "E000.12.56.868"]
+position = ["N048.21.12.214", "E000.34.21.203"]
 size = 40
 controller_me = "FFW"
-controller_others = []
+controller_others = ["RR","RRE"]
 default = true
 
 [[sector_vertical_limit]]
+# TH RT OT without RR (up to 660)
+text = "660\r\n000"
+position = ["N048.21.12.214", "E000.34.21.203"]
+size = 40
+controller_me = "FFW"
+controller_not_others = ["RR","RRE"]
+default = true
+
+[[sector_vertical_limit]]
+# MZQX above TP TB TN
+text = "660\r\n295"
+position = ["N049.42.40.221", "E000.31.23.168"]
+size = 40
+controller_me = "FFW"
+controller_not_others = ["RR","RRE"]
+default = true
+
+[[sector_vertical_limit]]
+# MSQX above DGDO without RR
+text = "660\r\n295"
+position = ["N048.40.23.315", "E002.05.03.982"]
+size = 40
+controller_me = "FFW"
+controller_others = []
+controller_not_others = ["FFW","RR","RRE"]
+default = true
+
+[[sector_vertical_limit]]
+# West Sectors with RR without FFW
 text = "295\r\n000"
-position = ["N049.07.00.209", "E000.12.56.868"]
+position = ["N049.03.27.972", "E000.50.27.678"]
 size = 40
 controller_me = "FFN"
-controller_others = []
+controller_others = ["RR","RRE"]
 controller_not_others = ["FFW"]
 default = true
 
-# FFU
+[[sector_vertical_limit]]
+# West Sectors without RR without FFW
+text = "660\r\n000"
+position = ["N049.03.27.972", "E000.50.27.678"]
+size = 40
+controller_me = "FFN"
+controller_others = []
+controller_not_others = ["FFW","RR","RRE"]
+default = true
+
+[[sector_vertical_limit]]
+# MSQX above DGDO without RR without FFW
+text = "660\r\n295"
+position = ["N048.40.23.315", "E002.05.03.982"]
+size = 40
+controller_me = "FFN"
+controller_others = []
+controller_not_others = ["FFW","RR","RRE"]
+default = true
+
+# FFS
 [[sector_vertical_limit]]
 #comment = "HP Sector"
 text = "660\r\n000"
@@ -150,14 +200,14 @@ position = ["N047.23.39.901","E003.30.13.568"]
 size = 40
 controller_me = "FF"
 controller_others=["EE","EES","RR","RRE"]
-controller_not_others=["FFU"]
+controller_not_others=["FFS"]
 
 [[sector_vertical_limit]]
 #comment = "HP Sector"
 text = "660\r\n000"
 position = ["N047.23.39.901","E003.00.13.568"]
 size = 40
-controller_me = "FFU"
+controller_me = "FFS"
 controller_others=["EE","EES","RR","RRE"]
 
 [[sector_vertical_limit]]
@@ -167,14 +217,14 @@ position = ["N047.16.09.890","E004.50.55.427"]
 size = 40
 controller_me = "FF"
 controller_others=["EE","EES","RR","RRE"]
-controller_not_others=["FFU"]
+controller_not_others=["FFS"]
 
 [[sector_vertical_limit]]
 #comment = "HP Sector above LFEE"
 text = "660\r\n195"
 position = ["N047.16.09.890","E004.50.55.427"]
 size = 40
-controller_me = "FFU"
+controller_me = "FFS"
 controller_others=["EE","EES","RR","RRE"]
 
 [[sector_vertical_limit]]
@@ -184,14 +234,14 @@ position = ["N048.47.00.320","E003.32.50.502"]
 size = 40
 controller_me = "FF"
 controller_others=["EE","EES","RR","RRE"]
-controller_not_others=["FFU"]
+controller_not_others=["FFS"]
 
 [[sector_vertical_limit]]
 #comment = "DG AO AR Below LFEE"
 text = "295\r\n000"
 position = ["N048.47.09.890","E003.32.50.502"]
 size = 40
-controller_me = "FFU"
+controller_me = "FFS"
 controller_others=["EE","EES","RR","RRE"]
 
 [[sector_vertical_limit]]
@@ -208,7 +258,7 @@ default = true
 text = "295\r\n000"
 position = ["N047.41.34.328", "E001.58.11.473"]
 size = 40
-controller_me = "FFU"
+controller_me = "FFS"
 controller_others=[]
 default = true
 
@@ -219,7 +269,7 @@ text = "660\r\n295"
 position = ["N049.07.00.209", "E000.12.56.868"]
 size = 60
 controller_me = "RR"
-controller_others = ["FF", "FFW"]
+controller_others = []
 controller_not_others = ["RRE"]
 
 [[sector_vertical_limit]]
@@ -227,7 +277,7 @@ text = "660\r\n295"
 position = ["N049.07.00.209", "E000.12.56.868"]
 size = 60
 controller_me = "RRE"
-controller_others = ["FF", "FFW", "EE", "EEN", "RRN", "RR","RRS"]
+controller_others = []
 controller_not_others = ["RRQ"]
 
 [[sector_vertical_limit]]
