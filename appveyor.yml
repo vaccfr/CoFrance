@@ -34,7 +34,7 @@ max_jobs: 1
 #---------------------------------#
 
 # Build worker image (VM template)
-os: Visual Studio 2019
+os: Visual Studio 2022
 
 #---------------------------------#
 #       build configuration       #
@@ -43,7 +43,6 @@ os: Visual Studio 2019
 install:
   - cmd: git config --global core.autocrlf true
   - cmd: cd C:\Tools\vcpkg
-  - cmd: git pull
   - cmd: .\bootstrap-vcpkg.bat
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - cmd: git submodule update --init --recursive
