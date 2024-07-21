@@ -132,7 +132,6 @@ position = ["N048.21.12.214", "E000.34.21.203"]
 size = 40
 controller_me = "FFW"
 controller_others = ["RR","RRE"]
-default = true
 
 [[sector_vertical_limit]]
 # TH RT OT without RR (up to 660)
@@ -170,7 +169,6 @@ size = 40
 controller_me = "FFN"
 controller_others = ["RR","RRE"]
 controller_not_others = ["FFW"]
-default = true
 
 [[sector_vertical_limit]]
 # West Sectors without RR without FFW
@@ -271,6 +269,7 @@ size = 60
 controller_me = "RR"
 controller_others = []
 controller_not_others = ["RRE"]
+default = true
 
 [[sector_vertical_limit]]
 text = "660\r\n295"
@@ -279,6 +278,7 @@ size = 60
 controller_me = "RRE"
 controller_others = []
 controller_not_others = ["RRQ"]
+default = true
 
 [[sector_vertical_limit]]
 text = "355\r\n295"
@@ -302,6 +302,7 @@ default = 1
 controller_me = "RRS"
 controller_others = []
 controller_not_others = ["RRA"]
+default = true
 
 [[sector_vertical_limit]]
 text = "355\r\n255"
@@ -319,6 +320,7 @@ default = 1
 controller_me = "RRA"
 controller_others = []
 controller_not_others = []
+default = true
 
 [[sector_vertical_limit]]
 text = "255\r\n000"
@@ -334,6 +336,7 @@ size = 60
 default = 1
 controller_me = "RRV"
 controller_others = [] 
+default = true
 
 [[sector_vertical_limit]]
 text = "660\r\n255"
@@ -341,7 +344,8 @@ position = ["N048.43.18.833", "W007.02.13.441"]
 size = 80
 default = 1
 controller_me = "RRW"
-controller_others = [] 
+controller_others = []
+default = true
 
 [[sector_vertical_limit]]
 text = "660\r\n255"
@@ -350,6 +354,7 @@ size = 60
 default = 1
 controller_me = "RRJ"
 controller_others = [] 
+default = true
 
 comment = "others"
 
@@ -471,11 +476,11 @@ default = true
 [[sector_vertical_limit]]
 comment= "MM South"
 text = "245\r\n000"
-default = "yes"
 position = ["N043.11.12.880","E007.11.48.057"]
 size = 50
 controller_me = "MMS"
 controller_others = []
+default = true
 
 [[sector_vertical_limit]]
 #comment= "Above MM South no MM E"
