@@ -648,7 +648,7 @@ controller_not_others = ["BBN"]
 
 [[sector_vertical_limit]]
 comment = "exercice VNATO 24102024"
-text = "TRA22\r\n\290\r\n230"
+text = "TRA22\r\n290\r\n230"
 position = ["N048.35.34.008", "E007.17.27.065"]
 size = 60
 controller_me = "EE"
