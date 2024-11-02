@@ -367,91 +367,10 @@ size = 20
 controller_me = "MM"
 controller_others=["LSAS", "LSAG"]
 
-comment = "Marseille"
+#comment = "LFMM definitions"
 
 [[sector_vertical_limit]]
-#comment="SIV Rodez"
-text = "145\r\n000"
-position = ["N044.49.03.918", "E002.03.52.174"]
-size = 30
-controller_me = "MMN"
-controller_others=[]
-controller_not_others=["LCA"]
-default = true
-
-[[sector_vertical_limit]]
-comment="SIV Rodez"
-text = "145\r\n000"
-position = ["N044.49.03.918", "E002.03.52.174"]
-size = 30
-controller_me = "MM"
-controller_others=[]
-controller_not_others=["LCA"]
-default = true
-
-[[sector_vertical_limit]]
-comment="MMN normal"
-text = "245\r\n000"
-position = ["N045.03.37.435","E004.14.07.534"]
-size = 40
-controller_me = "MMN"
-controller_others=[]
-default = true
-
-[[sector_vertical_limit]]
-comment= "Below BB T Sector"
-text = "195\r\n000"
-position = ["N045.34.10.143","E003.40.28.064"]
-size = 30
-controller_me = "MMN"
-controller_others = ["BB","BBN"]
-
-[[sector_vertical_limit]]
-#comment= "Below BB T Sector"
-text = "195\r\n000"
-position = ["N045.34.10.143","E003.40.28.064"]
-size = 30
-controller_me = "MM"
-controller_others = ["BB","BBN"]
-
-[[sector_vertical_limit]]
-comment= "Below BB H Sector"
-text = "195\r\n000"
-position = ["N044.02.28.719","E003.00.28.916"]
-size = 30
-controller_me = "MMN"
-controller_others = ["BB","BBS"]
-
-[[sector_vertical_limit]]
-#comment= "Below BB H Sector"
-text = "195\r\n000"
-position = ["N044.02.28.719","E003.00.28.916"]
-size = 30
-controller_me = "MM"
-controller_others = ["BB","BBS"]
-
-[[sector_vertical_limit]]
-comment= "SIV Clermont"
-text = "115\r\n000"
-position = ["N046.57.55.679", "E003.41.45.514"]
-size = 30
-controller_me = "MMN"
-controller_others=[]
-controller_not_others=["LCA"]
-default = true
-
-[[sector_vertical_limit]]
-comment= "SIV Clermont"
-text = "115\r\n000"
-position = ["N046.57.55.679", "E003.41.45.514"]
-size = 30
-controller_me = "MM"
-controller_others=[]
-controller_not_others=["LCA"]
-default = true
-
-[[sector_vertical_limit]]
-comment= "Under swiss"
+#comment= "Under swiss"
 text = "195\r\n000"
 position = ["N045.29.54.291", "E006.31.00.885"]
 size = 20
@@ -460,7 +379,16 @@ controller_others=[]
 default = true
 
 [[sector_vertical_limit]]
-comment= "Under swiss"
+#comment= "MMN when MNU or MUU is connected"
+text = "245\r\n000"
+position = ["N045.05.25.063", "E003.00.41.035"]
+size = 50
+controller_me = "MMN"
+controller_others=["MNU","MUU"]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "Under swiss"
 text = "195\r\n000"
 position = ["N045.29.54.291", "E006.31.00.885"]
 size = 20
@@ -469,73 +397,129 @@ controller_others=[]
 default = true
 
 [[sector_vertical_limit]]
-comment= "MM South"
+#comment= "MM with MM_EU connected and no one else"
 text = "245\r\n000"
-position = ["N043.11.12.880","E007.11.48.057"]
+position = ["N043.01.11.054", "E006.06.56.045"]
 size = 50
-controller_me = "MMS"
-controller_others = []
+controller_me = "MM"
+controller_others=["MEU"]
 default = true
 
 [[sector_vertical_limit]]
-#comment= "Above MM South no MM E"
-text = "660\r\n245"
-position = ["N043.11.12.880","E007.11.48.057"]
-size = 50
-controller_me = "MM"
-controller_others = ["MMS"]
-controller_not_others = ["MME"]
-
-[[sector_vertical_limit]]
-#comment= "MM Above MM North"
-text = "660\r\n245"
-position = ["N043.28.14.306","E004.09.08.071"]
-size = 50
-controller_me = "MM"
-controller_others = ["MMN"]
-
-[[sector_vertical_limit]]
-#comment= "MM Below MM East no MM N"
-text = "245\r\n000"
-position = ["N045.54.09.568","E004.53.30.728"]
-size = 30
-controller_me = "MM"
-controller_others = ["MME"]
-controller_not_others = ["MMN"]
-
-[[sector_vertical_limit]]
-#comment= "DZ sector, when other MM connected"
+#comment= "MM with MM_N connected and no one else"
 text = "660\r\n000"
-position = ["N041.15.15.903","E005.32.36.979"]
+position = ["N042.55.19.048", "E005.01.15.028"]
 size = 50
 controller_me = "MM"
-controller_others = ["MME","MMN","MMS"]
-
-[[sector_vertical_limit]]
-#comment= "MME no MM S"
-text = "660\r\n000"
-position = ["N043.11.12.880","E007.11.48.057"]
-size = 30
-controller_me = "MME"
-controller_others = []
-controller_not_others = ["MMS"]
+controller_others=["MMN"]
 default = true
 
 [[sector_vertical_limit]]
-#comment= "MME Above MM South"
-text = "660\r\n245"
-position = ["N043.11.12.880","E007.11.48.057"]
+#comment= "MM with MM_NU connected and no one else"
+text = "245\r\n000"
+position = ["N045.20.59.094", "E003.25.19.045"]
 size = 50
-controller_me = "MME"
-controller_others = ["MMS"]
+controller_me = "MM"
+controller_others=["MNU"]
+default = true
 
 [[sector_vertical_limit]]
-#comment= "MME North"
-text = "660\r\n245"
-position = ["N045.54.09.568","E004.53.30.728"]
-size = 30
+#comment= "MM with MM_U connected and no one else"
+text = "245\r\n000"
+position = ["N043.29.46.085", "E004.38.34.073"]
+size = 50
+controller_me = "MM"
+controller_others=["MUU"]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "MM with MM_E connected and no one else"
+text = "660\r\n000"
+position = ["N041.32.47.013", "E004.42.08.007"]
+size = 50
+controller_me = "MM"
+controller_others=["MME"]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "MM with MM_E connected and no one else"
+text = "660\r\n000"
+position = ["N045.29.39.048", "E003.05.07.021"]
+size = 50
+controller_me = "MM"
+controller_others=["MME"]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "MME when no one else above connected"
+text = "660\r\n000"
+position = ["N043.05.28.092", "E006.21.03.092"]
+size = 50
 controller_me = "MME"
-controller_others = []
+controller_others=[]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "MME when MM_EU connected"
+text = "245\r\n000"
+position = ["N043.05.28.092", "E006.21.03.092"]
+size = 50
+controller_me = "MME"
+controller_others=["MEU"]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "MEU when anyone else connected"
+text = "660\r\n245"
+position = ["N043.05.28.092", "E006.21.03.092"]
+size = 50
+controller_me = "MEU"
+controller_others=[]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "NEM when no one else connected"
+text = "660\r\n000"
+position = ["N043.05.28.092", "E006.21.03.092"]
+size = 50
+controller_me = "NEM"
+controller_others=[]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "NEM when NE or U connected"
+text = "245\r\n000"
+position = ["N043.05.28.092", "E006.21.03.092"]
+size = 50
+controller_me = "NEM"
+controller_others=["MEU","MUU"]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "NEM when MNU connected"
+text = "245\r\n000"
+position = ["N045.05.25.063", "E003.00.41.035"]
+size = 50
+controller_me = "NEM"
+controller_others=["MNU"]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "MNU when anyone else connected"
+text = "660\r\n245"
+position = ["N045.05.25.063", "E003.00.41.035"]
+size = 50
+controller_me = "MNU"
+controller_others=[]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "MM_U connected"
+text = "660\r\n245"
+position = ["N042.31.33.017", "E004.53.35.079"]
+size = 50
+controller_me = "MUU"
+controller_others=[]
 default = true
 
 #comment = "LFBB definitions"
@@ -645,12 +629,3 @@ size = 50
 controller_me = "BB"
 controller_others = ["BBS"]
 controller_not_others = ["BBN"]
-
-[[sector_vertical_limit]]
-comment = "exercice VNATO 24102024"
-text = "TRA22\r\n290\r\n230"
-position = ["N048.35.34.008", "E007.17.27.065"]
-size = 15
-controller_me = "EE"
-controller_others = ["FFM"]
-controller_not_others = []
