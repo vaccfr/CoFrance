@@ -429,7 +429,6 @@ position = ["N043.29.46.085", "E004.38.34.073"]
 size = 50
 controller_me = "MM"
 controller_others=["MUU"]
-default = true
 
 [[sector_vertical_limit]]
 #comment= "MM with MM_E connected and no one else"
