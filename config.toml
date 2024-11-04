@@ -1,5 +1,5 @@
 [colours]
-sector_vertical_limits = [140, 65, 65, 85]
+sector_vertical_limits = [155, 65, 65, 65]
 ac_not_concerned = [142, 142, 142]
 ac_notified = [84, 179, 108]
 ac_assumed = [209, 209, 209]
@@ -422,7 +422,7 @@ controller_others=["MNU"]
 [[sector_vertical_limit]]
 #comment= "MM with MM_U connected and no one else"
 text = "245\r\n000"
-position = ["N043.29.46.085", "E004.38.34.073"]
+position = ["N042.49.11.087", "E003.59.14.093"]
 size = 80
 controller_me = "MM"
 controller_others=["MUU"]
