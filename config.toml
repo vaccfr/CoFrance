@@ -376,6 +376,7 @@ position = ["N045.29.54.291", "E006.31.00.885"]
 size = 20
 controller_me = "MMN"
 controller_others=[]
+default = true
 
 [[sector_vertical_limit]]
 #comment= "MMN when MNU or MUU is connected"
@@ -392,6 +393,7 @@ position = ["N045.29.54.291", "E006.31.00.885"]
 size = 20
 controller_me = "MM"
 controller_others=[]
+default = true
 
 [[sector_vertical_limit]]
 #comment= "MM with MM_EU connected and no one else"
@@ -448,6 +450,7 @@ position = ["N043.05.28.092", "E006.21.03.092"]
 size = 50
 controller_me = "MME"
 controller_others=[]
+default = true
 
 [[sector_vertical_limit]]
 #comment= "MME when MM_EU connected"
@@ -464,6 +467,7 @@ position = ["N043.05.28.092", "E006.21.03.092"]
 size = 50
 controller_me = "MEU"
 controller_others=[]
+default = true
 
 [[sector_vertical_limit]]
 #comment= "NEM when no one else connected"
@@ -472,6 +476,7 @@ position = ["N043.05.28.092", "E006.21.03.092"]
 size = 50
 controller_me = "NEM"
 controller_others=[]
+default = true
 
 [[sector_vertical_limit]]
 #comment= "NEM when NE or U connected"
@@ -496,6 +501,7 @@ position = ["N045.05.25.063", "E003.00.41.035"]
 size = 50
 controller_me = "MNU"
 controller_others=[]
+default = true
 
 [[sector_vertical_limit]]
 #comment= "MM_U connected"
@@ -504,6 +510,7 @@ position = ["N042.31.33.017", "E004.53.35.079"]
 size = 50
 controller_me = "MUU"
 controller_others=[]
+default = true
 
 #comment = "LFBB definitions"
 
