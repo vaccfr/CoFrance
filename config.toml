@@ -422,7 +422,7 @@ controller_others=["MNU"]
 [[sector_vertical_limit]]
 #comment= "MM with MM_U connected and no one else"
 text = "245\r\n000"
-position = ["N042.49.11.087", "E003.59.14.093"]
+position = ["N043.05.28.069", "E003.36.41.048"]
 size = 80
 controller_me = "MM"
 controller_others=["MUU"]
