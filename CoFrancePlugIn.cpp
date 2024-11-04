@@ -81,6 +81,11 @@ bool CoFrancePlugIn::OnCompileCommand(const char* sCommandLine)
         return true;
     }
 
+    if (strcmp(sCommandLine, ".cofrance reload-local") == 0 || strcmp(sCommandLine, ".cofrl") == 0) {
+        LoadConfigFile(false);
+        return true;
+    }
+
     if (strcmp(sCommandLine, ".cofrance perf") == 0) {
         performanceMode = true;
         return true;
