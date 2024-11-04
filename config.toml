@@ -385,7 +385,6 @@ position = ["N045.05.25.063", "E003.00.41.035"]
 size = 50
 controller_me = "MMN"
 controller_others=["MNU","MUU"]
-default = true
 
 [[sector_vertical_limit]]
 #comment= "Under swiss"
