@@ -379,19 +379,28 @@ controller_others=[]
 default = true
 
 [[sector_vertical_limit]]
-#comment= "MMN when MNU or MUU is connected"
-text = "245\r\n000"
-position = ["N045.05.25.063", "E003.00.41.035"]
-size = 50
-controller_me = "MMN"
-controller_others=["MNU","MUU"]
-
-[[sector_vertical_limit]]
 #comment= "border with Paris"
 text = "195\r\n000"
 position = ["N047.03.34.077", "E003.38.02.075"]
 size = 30
-controller_me = "MM"
+controller_me = "MMN"
+controller_others=[]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "MNU or MUU connected"
+text = "245\r\n000"
+position = ["N045.29.05.078", "E004.40.45.041"]
+size = 40
+controller_me = "MMN"
+controller_others=["MNU","MUU"]
+
+[[sector_vertical_limit]]
+#comment= "Bordeaux tongue"
+text = "195\r\n000"
+position = ["N044.47.33.082", "E002.04.43.093"]
+size = 40
+controller_me = "MMN"
 controller_others=[]
 default = true
 
@@ -405,127 +414,130 @@ controller_others=[]
 default = true
 
 [[sector_vertical_limit]]
-#comment= "Bordeaux tongue"
+#comment= "border with Paris"
 text = "195\r\n000"
-position = ["N045.06.56.054", "E002.04.03.068"]
+position = ["N047.03.34.077", "E003.38.02.075"]
 size = 30
 controller_me = "MM"
 controller_others=[]
 default = true
 
 [[sector_vertical_limit]]
-#comment= "MM with MM_EU connected and no one else"
-text = "245\r\n000"
-position = ["N043.01.11.054", "E006.06.56.045"]
-size = 50
+#comment= "Bordeaux tongue"
+text = "195\r\n000"
+position = ["N044.47.33.082", "E002.04.43.093"]
+size = 40
 controller_me = "MM"
-controller_others=["MEU"]
+controller_others=[]
+default = true
 
 [[sector_vertical_limit]]
-#comment= "MM with MM_N connected and no one else"
+#comment= "MM when MNU or MUU is open but not MMN"
+text = "245\r\n000"
+position = ["N045.29.05.078", "E004.40.45.041"]
+size = 40
+controller_me = "MM"
+controller_others=["MNU","MUU"]
+controller_not_others=["MMN"]
+
+[[sector_vertical_limit]]
+#comment= "MM when MEU and MNU are here but no MUU and no MME"
+text = "245\r\n000"
+position = ["N043.01.29.013", "E007.38.18.058"]
+size = 40
+controller_me = "MM"
+controller_others=["MEU","MMU"]
+controller_not_others=["MME","MUU"]
+
+[[sector_vertical_limit]]
+#comment= "MM when MMN and MEU are here but no MUU, far south of sea"
 text = "660\r\n000"
-position = ["N042.55.19.048", "E005.01.15.028"]
-size = 50
+position = ["N041.03.46.022", "E005.56.30.091"]
+size = 60
 controller_me = "MM"
-controller_others=["MMN"]
+controller_others=["MMN","MEU"]
+controller_not_others=["MUU"]
 
 [[sector_vertical_limit]]
-#comment= "MM with MM_NU connected and no one else"
-text = "245\r\n000"
-position = ["N045.20.59.094", "E003.25.19.045"]
+#comment= "MM when MMN and MEU are here but no MUU near perpi"
+text = "660\r\n000"
+position = ["N043.05.33.056", "E003.45.59.073"]
 size = 50
 controller_me = "MM"
-controller_others=["MNU"]
+controller_others=["MMN","MEU"]
+controller_not_others=["MUU"]
 
 [[sector_vertical_limit]]
-#comment= "MM with MM_U connected and no one else"
+#comment= "MM when MUU here far south of sea"
 text = "245\r\n000"
-position = ["N043.05.28.069", "E003.36.41.048"]
-size = 80
+position = ["N041.03.46.022", "E005.56.30.091"]
+size = 60
 controller_me = "MM"
 controller_others=["MUU"]
 
 [[sector_vertical_limit]]
-#comment= "MM with MM_E connected and no one else"
-text = "660\r\n000"
-position = ["N041.32.47.013", "E004.42.08.007"]
-size = 50
-controller_me = "MM"
-controller_others=["MME"]
-
-[[sector_vertical_limit]]
-#comment= "MM with MM_E connected and no one else"
-text = "660\r\n000"
-position = ["N045.29.39.048", "E003.05.07.021"]
-size = 50
-controller_me = "MM"
-controller_others=["MME"]
-
-[[sector_vertical_limit]]
-#comment= "MME when no one else above connected"
-text = "660\r\n000"
-position = ["N043.05.28.092", "E006.21.03.092"]
-size = 50
-controller_me = "MME"
-controller_others=[]
-default = true
-
-[[sector_vertical_limit]]
-#comment= "MME when MM_EU connected"
+#comment= "MM when MMN and MEU are here but no MUU near perpi"
 text = "245\r\n000"
-position = ["N043.05.28.092", "E006.21.03.092"]
+position = ["N043.05.33.056", "E003.45.59.073"]
+size = 60
+controller_me = "MM"
+controller_others=["MUU"]
+
+[[sector_vertical_limit]]
+#comment= "NEM when MEU is connected"
+text = "245\r\n000"
+position = ["N042.58.55.007", "E006.58.27.060"]
+size = 60
+controller_me = "NEM"
+controller_others=["MEU"]
+
+[[sector_vertical_limit]]
+#comment= "NEM when MNU or MUU is connected"
+text = "245\r\n000"
+position = ["N045.23.06.039", "E004.48.44.018"]
+size = 50
+controller_me = "NEM"
+controller_others=["MNU","MUU"]
+
+[[sector_vertical_limit]]
+#comment= "MME when MEU is connected"
+text = "245\r\n000"
+position = ["N043.09.03.058", "E007.28.37.012"]
 size = 50
 controller_me = "MME"
 controller_others=["MEU"]
 
 [[sector_vertical_limit]]
-#comment= "MEU when anyone else connected"
+#comment= "MNU pov"
 text = "660\r\n245"
-position = ["N043.05.28.092", "E006.21.03.092"]
-size = 50
-controller_me = "MEU"
-controller_others=[]
-default = true
-
-[[sector_vertical_limit]]
-#comment= "NEM when no one else connected"
-text = "660\r\n000"
-position = ["N043.05.28.092", "E006.21.03.092"]
-size = 50
-controller_me = "NEM"
-controller_others=[]
-default = true
-
-[[sector_vertical_limit]]
-#comment= "NEM when NE or U connected"
-text = "245\r\n000"
-position = ["N043.05.28.092", "E006.21.03.092"]
-size = 50
-controller_me = "NEM"
-controller_others=["MEU","MUU"]
-
-[[sector_vertical_limit]]
-#comment= "NEM when MNU connected"
-text = "245\r\n000"
-position = ["N045.05.25.063", "E003.00.41.035"]
-size = 50
-controller_me = "NEM"
-controller_others=["MNU"]
-
-[[sector_vertical_limit]]
-#comment= "MNU when anyone else connected"
-text = "660\r\n245"
-position = ["N045.05.25.063", "E003.00.41.035"]
+position = ["N045.23.06.039", "E004.48.44.018"]
 size = 50
 controller_me = "MNU"
 controller_others=[]
 default = true
 
 [[sector_vertical_limit]]
-#comment= "MM_U connected"
+#comment= "MEU pov"
 text = "660\r\n245"
-position = ["N042.31.33.017", "E004.53.35.079"]
+position = ["N043.07.41.078", "E007.18.55.069"]
 size = 50
+controller_me = "MEU"
+controller_others=[]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "MUU when all connected near perpi"
+text = "660\r\n245"
+position = ["N043.05.33.056", "E003.45.59.075"]
+size = 40
+controller_me = "MUU"
+controller_others=["MEU","NEM","MNU"]
+
+[[sector_vertical_limit]]
+#comment= "MUU when no upper connected"
+text = "660\r\n245"
+position = ["N041.03.46.022", "E005.56.30.091"]
+size = 80
 controller_me = "MUU"
 controller_others=[]
 default = true
