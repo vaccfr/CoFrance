@@ -1,5 +1,5 @@
 [colours]
-sector_vertical_limits = [155, 65, 65, 65]
+sector_vertical_limits = [140, 65, 65, 65]
 ac_not_concerned = [142, 142, 142]
 ac_notified = [84, 179, 108]
 ac_assumed = [209, 209, 209]
@@ -387,10 +387,28 @@ controller_me = "MMN"
 controller_others=["MNU","MUU"]
 
 [[sector_vertical_limit]]
+#comment= "border with Paris"
+text = "195\r\n000"
+position = ["N047.03.34.077", "E003.38.02.075"]
+size = 30
+controller_me = "MM"
+controller_others=[]
+default = true
+
+[[sector_vertical_limit]]
 #comment= "Under swiss"
 text = "195\r\n000"
 position = ["N045.29.54.291", "E006.31.00.885"]
 size = 20
+controller_me = "MM"
+controller_others=[]
+default = true
+
+[[sector_vertical_limit]]
+#comment= "Bordeaux tongue"
+text = "195\r\n000"
+position = ["N045.06.56.054", "E002.04.03.068"]
+size = 30
 controller_me = "MM"
 controller_others=[]
 default = true
