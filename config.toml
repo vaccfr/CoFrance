@@ -17,6 +17,10 @@ intention_code_vfr = [255, 121, 0]
 intention_code_arrival = [237, 168, 255]
 intention_code_departure = [114, 216, 250]
 intention_code_lfpg_arr_south = [255, 176, 176]
+dep_runway_lfpg_north = [176, 255, 255]
+dep_runway_lfpg_south = [255, 176, 176]
+sid_lfpg_north = [176, 255, 255]
+sid_lfpg_south = [255, 176, 176]
 ocl_tooltip = [255, 246, 216]
 
 [ac_symbols]
@@ -39,6 +43,10 @@ time_to_extrapolate = 100
 altitude_sep = 900
 altitude_coarse_filter = 15000
 distance_coarse_filter = 70
+
+[lfpg]
+departure_north = ["ELCOB", "OPALE", "ATREX", "NURMO", "DIKOL", "RANUX"]
+departure_south = ["LGL", "AGOPA", "ERIXU", "OLZOM", "MONOT", "LATRA", "OKASI", "DORDI", "PILUL", "BAXIR", "BUBLI", "LANVI"]
 
 comment = "LFEE definitions"
 
