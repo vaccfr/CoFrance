@@ -58,6 +58,9 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
     RegisterTagItemType("Stand", CoFranceTags::STAND);
     RegisterTagItemFunction("Stand popup", CoFranceTags::FUNCTION_STAND_MENU);
 
+    RegisterTagItemType("Assigned runway (colored)", CoFranceTags::COLORED_RWY);
+    RegisterTagItemType("Assigned SID (colored)", CoFranceTags::COLORED_SID);
+
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
 
@@ -516,6 +519,57 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
             return;
         string Stand = FlightPlan.GetControllerAssignedData().GetFlightStripAnnotation(CoFranceTags::ANNOTATION_STAND);
         strcpy_s(sItemString, 16, Stand.c_str());
+    }
+
+    if (ItemCode == CoFranceTags::COLORED_RWY) {
+        string dep_rwy = "";
+        if (FlightPlan.IsValid()) {
+            if (strlen(FlightPlan.GetFlightPlanData().GetDepartureRwy()) > 0) {
+                dep_rwy = FlightPlan.GetFlightPlanData().GetDepartureRwy();
+                dep_rwy = dep_rwy.substr(0, 3);
+                if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin()) &&
+                    (startsWith("09", FlightPlan.GetFlightPlanData().GetDepartureRwy()) || startsWith("27", FlightPlan.GetFlightPlanData().GetDepartureRwy()))) {
+                    // North runways
+                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "dep_runway_lfpg_north");
+                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+                }
+                if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin()) &&
+                    (startsWith("26", FlightPlan.GetFlightPlanData().GetDepartureRwy()) || startsWith("08", FlightPlan.GetFlightPlanData().GetDepartureRwy()))) {
+                    // South runways
+                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "dep_runway_lfpg_south");
+                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+                }
+            }
+        }
+        strcpy_s(sItemString, 16, dep_rwy.c_str());
+    }
+
+    if (ItemCode == CoFranceTags::COLORED_SID) {
+        auto departure_lfpg_north = toml::find<std::vector<string>>(CoFranceConfig, "lfpg", "departure_north");
+        auto departure_lfpg_south = toml::find<std::vector<string>>(CoFranceConfig, "lfpg", "departure_south");
+        string sid = "";
+        string departure = "";
+        if (FlightPlan.IsValid()) {
+            if (strlen(FlightPlan.GetFlightPlanData().GetSidName()) > 0) {
+                sid = FlightPlan.GetFlightPlanData().GetSidName();
+                departure = sid.substr(0, sid.size() - 2);
+                // North departures
+                if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin()) && StringContainsArray(departure, departure_lfpg_north)) {
+                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "sid_lfpg_north");
+                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+                }
+                // South departures
+                if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin()) && StringContainsArray(departure, departure_lfpg_south)) {
+                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "sid_lfpg_south");
+                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+                }
+            }
+        }
+        strcpy_s(sItemString, 16, sid.c_str());
     }
 }
 

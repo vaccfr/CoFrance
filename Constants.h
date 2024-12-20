@@ -41,6 +41,8 @@ namespace CoFranceTags {
     const int OCL_FLAG = 19;
     const int ASSIGNED_SPEED = 20;
     const int STAND = 21;
+    const int COLORED_RWY = 22;
+    const int COLORED_SID = 23;
 
     const int ANNOTATION_SPEED_SIGN = 2;
     const int ANNOTATION_STAND = 3;
