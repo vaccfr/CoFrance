@@ -522,51 +522,45 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
     }
 
     if (ItemCode == CoFranceTags::COLORED_RWY) {
-        string dep_rwy = "";
-        if (FlightPlan.IsValid()) {
-            if (strlen(FlightPlan.GetFlightPlanData().GetDepartureRwy()) > 0) {
-                dep_rwy = FlightPlan.GetFlightPlanData().GetDepartureRwy();
-                dep_rwy = dep_rwy.substr(0, 3);
-                if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin()) &&
-                    (startsWith("09", FlightPlan.GetFlightPlanData().GetDepartureRwy()) || startsWith("27", FlightPlan.GetFlightPlanData().GetDepartureRwy()))) {
-                    // North runways
-                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "dep_runway_lfpg_north");
-                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
-                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
-                }
-                if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin()) &&
-                    (startsWith("26", FlightPlan.GetFlightPlanData().GetDepartureRwy()) || startsWith("08", FlightPlan.GetFlightPlanData().GetDepartureRwy()))) {
-                    // South runways
-                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "dep_runway_lfpg_south");
-                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
-                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
-                }
+        if (!FlightPlan.IsValid())
+            return;
+        const char* dep_runway = FlightPlan.GetFlightPlanData().GetDepartureRwy();
+        if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin())) {
+            if (startsWith("09", dep_runway) ||  startsWith("27", dep_runway)) {
+                // North runways
+                auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "dep_runway_lfpg_north");
+                *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+            }
+            if (startsWith("08", dep_runway) ||  startsWith("26", dep_runway)) {
+                // South runways
+                auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "dep_runway_lfpg_south");
+                *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
             }
         }
-        strcpy_s(sItemString, 16, dep_rwy.c_str());
+        strcpy_s(sItemString, 16, dep_runway);
     }
 
     if (ItemCode == CoFranceTags::COLORED_SID) {
+        if (!FlightPlan.IsValid())
+            return;
         auto departure_lfpg_north = toml::find<std::vector<string>>(CoFranceConfig, "lfpg", "departure_north");
         auto departure_lfpg_south = toml::find<std::vector<string>>(CoFranceConfig, "lfpg", "departure_south");
-        string sid = "";
-        string departure = "";
-        if (FlightPlan.IsValid()) {
-            if (strlen(FlightPlan.GetFlightPlanData().GetSidName()) > 0) {
-                sid = FlightPlan.GetFlightPlanData().GetSidName();
-                departure = sid.substr(0, sid.size() - 2);
-                // North departures
-                if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin()) && StringContainsArray(departure, departure_lfpg_north)) {
-                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "sid_lfpg_north");
-                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
-                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
-                }
-                // South departures
-                if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin()) && StringContainsArray(departure, departure_lfpg_south)) {
-                    auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "sid_lfpg_south");
-                    *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
-                    *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
-                }
+        string sid = FlightPlan.GetFlightPlanData().GetSidName();
+        if (startsWith("LFPG", FlightPlan.GetFlightPlanData().GetOrigin()) && sid.size() > 2) {
+            string departure = sid.substr(0, sid.size() - 2);
+            // North departures
+            if (StringContainsArray(departure, departure_lfpg_north)) {
+                auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "sid_lfpg_north");
+                *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
+            }
+            // South departures
+            if (StringContainsArray(departure, departure_lfpg_south)) {
+                auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "sid_lfpg_south");
+                *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
+                *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
             }
         }
         strcpy_s(sItemString, 16, sid.c_str());
