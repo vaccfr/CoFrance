@@ -30,7 +30,7 @@ jobs:
           if [ "${{ github.event_name }}" == "release" ]; then
             version=$(echo ${{ github.ref }} | sed 's/refs\/tags\/v//g')
           fi
-          echo "version=$version" >> $GITHUB_OUTPUT"    
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Install Visual Studio 2022 Build Tools
         run: choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Component.CoreBuildTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.CoreBuildTools"
