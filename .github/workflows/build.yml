@@ -48,7 +48,7 @@ jobs:
       - name: Build DLL
         run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x86 /p:Configuration=Release
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: CoFrance.dll
           path: Release/CoFrance.dll
