@@ -16,9 +16,5 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
-      - name: Export Visual Studio configuration
-        run: | 
-          . "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" export --config ${{ github.workspace }}\vsconfig.json
-          Get-Content ${{ github.workspace }}\vsconfig.json
-
-      
+      - name: Install toolset
+        run: choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Component.CoreBuildTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.CoreBuildTools"
