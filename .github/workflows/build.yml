@@ -13,25 +13,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set Command Prompt for Microsoft
+        uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          arch: x86
+
+      - name: Get commit short SHA
+        uses: benjlevesque/short-sha@v2.2
+        id: short-sha
+
       - name: Get version
         id: get_version
         shell: bash
         run: |
-          version="${{ github.sha }}"
+          version="${{ steps.short-sha.outputs.sha }}"
           if [ "${{ github.event_name }}" == "release" ]; then
             version=$(echo ${{ github.ref }} | sed 's/refs\/tags\/v//g')
           fi
-
-          echo "::set-output name=version::$version"    
+          echo "version=$version" >> $GITHUB_OUTPUT"    
 
       - name: Install Visual Studio 2022 Build Tools
         run: choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Component.CoreBuildTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.CoreBuildTools"
-
-      - name: Set up MSVC environment
-        shell: pwsh
-        run: |
-          Import-Module "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-          Enter-VsDevShell -VsInstallPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools"
 
       - name: Install and build vcpkg
         run: |
