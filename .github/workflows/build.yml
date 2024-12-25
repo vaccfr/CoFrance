@@ -18,6 +18,6 @@ jobs:
 
       - name: Export Visual Studio configuration
         run: | 
-          dir "C:\Program Files (x86)\Microsoft Visual Studio\Installer\
+          dir "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
 
       
