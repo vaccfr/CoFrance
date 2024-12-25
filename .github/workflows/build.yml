@@ -19,6 +19,6 @@ jobs:
       - name: Export Visual Studio configuration
         run: | 
           . "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" export --config ${{ github.workspace }}\vsconfig.json
-          Get-Content vsconfig.json
+          Get-Content ${{ github.workspace }}\vsconfig.json
 
       
