@@ -27,7 +27,7 @@ jobs:
         shell: bash
         run: |
           version="${{ steps.short-sha.outputs.sha }}"
-          if [ "${{ github.event_name }}" == "release" ]; then
+          if [ "${{ github.ref_type }}" == "tag" ]; then
             version=$(echo ${{ github.ref }} | sed 's/refs\/tags\/v//g')
           fi
           echo "version=$version" >> $GITHUB_OUTPUT
@@ -48,7 +48,19 @@ jobs:
       - name: Build DLL
         run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x86 /p:Configuration=Release
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: CoFrance.dll
           path: Release/CoFrance.dll
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: CoFrance version ${{ steps.get_version.outputs.version }}
+          prerelease: false
+          draft: true
+          files: |
+              Release/CoFrance.dll
+              config.toml
