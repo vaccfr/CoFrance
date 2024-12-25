@@ -13,11 +13,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
+      - name: Get version
+        id: get_version
+        shell: bash
+        run: |
+          version="${{ github.sha }}"
+          if [ "${{ github.event_name }}" == "release" ]; then
+            version=$(echo ${{ github.ref }} | sed 's/refs\/tags\/v//g')
+          fi
 
-      - name: Install additionnal Visual Studio components
-        run: | 
-          . "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" modify --add Microsoft.VisualStudio.Component.CoreBuildTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.CoreBuildTools
+          echo "::set-output name=version::$version"    
 
-      
+      - name: Install Visual Studio 2022 Build Tools
+        run: choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Component.CoreBuildTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.CoreBuildTools"
+
+      - name: Set up MSVC environment
+        shell: pwsh
+        run: |
+          Import-Module "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools"
+
+      - name: Install and build vcpkg
+        run: |
+          vcpkg install --triplet=x86-windows-static
+          vcpkg integrate install
+
+      - name: Set version in header and resource files
+        run: |
+          (Get-Content Constants.h).replace('@appveyor_build', '${{ steps.get_version.outputs.version }}') | Set-Content Constants.h
+          (Get-Content CoFrance.rc).replace('@appveyor_build', '${{ steps.get_version.outputs.version }}') | Set-Content CoFrance.rc
+
+      - name: Build DLL
+        run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x86 /p:Configuration=Release
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: CoFrance.dll
+          path: Release/CoFrance.dll
