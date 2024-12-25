@@ -18,7 +18,6 @@ jobs:
 
       - name: Export Visual Studio configuration
         run: | 
-          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" export --config vsconfig.json
-          Get-Content vsconfig.json
+          dir "C:\Program Files (x86)\Microsoft Visual Studio\Installer\
 
       
