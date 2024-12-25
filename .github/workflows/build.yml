@@ -28,7 +28,7 @@ jobs:
         run: |
           version="${{ steps.short-sha.outputs.sha }}"
           if [ "${{ github.ref_type }}" == "tag" ]; then
-            version=$(echo ${{ github.ref }} | sed 's/refs\/tags\/v//g')
+            version=$(echo ${{ github.ref }} | sed 's/refs\/tags\/(v)?//g')
           fi
           echo "version=$version" >> $GITHUB_OUTPUT
 
