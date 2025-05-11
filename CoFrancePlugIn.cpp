@@ -786,11 +786,12 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
             if (!fromWeb)
                 DisplayUserMessage("Message", "CoFrance PlugIn", "Error loading web config, reverting to local file!", false, false, false, false, false);
                 
-        }
+        } 
 
-        if (!fromWeb)
+        if (!fromWeb) {
             CoFranceConfig = toml::parse(DllPath + "\\CoFrance.toml");
-
+        }
+            
         CanLoadRadarScreen = true;
         DisplayUserMessage("Message", "CoFrance PlugIn", "Config file loaded!", false, false, false, false, false);
     }
