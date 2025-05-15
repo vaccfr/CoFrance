@@ -40,231 +40,531 @@ altitude_sep = 900
 altitude_coarse_filter = 15000
 distance_coarse_filter = 70
 
+
 comment = "LFEE definitions"
 
 [[sector_vertical_limit]]
-text = "660\r\n295"
-position = ["N050.06.40.282", "E002.30.02.140"]
-size = 60
+#comment "Nord Ouest Reims"
+text = "UNL\r\n265"
+position = ["N050.06.40.281", "E002.30.02.140"]
+size = 50
+controller_me = "EE"
+controller_others = []
+controller_not_others = ["EEN","UB","RUN","HN"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "Nord Ouest Reims avec UB connecté et RUN"
+text = "UNL\r\n265"
+position = ["N049.35.40.281", "E002.50.02.140"]
+size = 45
+controller_me = "EE"
+controller_others = ["UB","RUN"]
+controller_not_others = ["EEN"]
+
+[[sector_vertical_limit]]
+#comment "Nord Est PGA as EE avec HN connecté"
+text = "UNL\r\n265"
+position = ["N049.25.29.077", "E002.48.12.466"]
+size = 45
+controller_me = "EE"
+controller_others = ["HN"]
+controller_not_others = ["UB","RUN"]
+
+[[sector_vertical_limit]]
+#comment "Plein Nord Reims as EE avec HN et RUN"
+text = "345\r\n265"
+size = 35
+controller_me = "EE"
+position = ["N050.33.33.035", "E002.29.29.351"]
+controller_others = ["HN","RUN"]
+controller_not_others = ["UB","EEN"]
+
+[[sector_vertical_limit]]
+#comment "Nord Ouest Reims avec EEN"
+text = "UNL\r\n265"
+position = ["N049.50.40.281", "E003.00.02.140"]
+size = 50
+controller_me = "EE"
+controller_others = ["EEN"]
+
+[[sector_vertical_limit]]
+#comment "Plein Nord Reims avec UB connecté mais pas UN"
+text = "UNL\r\n345"
+position = ["N050.35.40.281", "E002.30.02.140"]
+size = 40
+controller_me = "EE"
+controller_others = ["UB"]
+controller_not_others = ["EEN"]
+
+[[sector_vertical_limit]]
+#comment "Plein Nord Reims avec UB et UN connectés"
+text = "UNL\r\n345"
+position = ["N050.00.40.281", "E002.00.02.140"]
+size = 40
+controller_me = "EE"
+controller_others = ["RUN"]
+controller_not_others = ["EEN","UB"]
+
+[[sector_vertical_limit]]
+#comment "Plein Nord Reims avec UB et HN mais pas EEN"
+text = "345\r\n265"
+size = 40
+position = ["N049.60.13.200", "E001.50.05.351"]
+controller_me = "EE"
+controller_others = ["HN","UB"]
+controller_not_others = ["EEN"]
+
+[[sector_vertical_limit]]
+#comment "est Reims"
+text = "UNL\r\nSFC"
+position = ["N048.31.21.284", "E005.55.48.722"]
+size = 50
+controller_me = "EE"
+controller_others = []
+controller_not_others = ["SBC","STA"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "est Reims, verticale Bale, sans Bale APP"
+text = "UNL\r\nSFC"
+position = ["N047.50.21.284", "E005.55.48.722"]
+size = 45
+controller_me = "EE"
+controller_others = ["STA"]
+controller_not_others = ["SBC"]
+
+[[sector_vertical_limit]]
+#comment "est Reims, verticale Strasbourg, sans Strasbourg APP"
+text = "UNL\r\nSFC"
+position = ["N048.50.21.284", "E005.55.48.722"]
+size = 50
+controller_me = "EE"
+controller_others = ["SBC"]
+controller_not_others = ["STA"]
+
+[[sector_vertical_limit]]
+#comment "est Reims, verticale Bale, avec Bale APP"
+text = "UNL\r\n195"
+position = ["N047.50.21.284", "E005.55.48.722"]
+size = 50
+controller_me = "EE"
+controller_others = ["SBC"]
+controller_not_others = ["UH"]
+
+[[sector_vertical_limit]]
+#comment "est Reims, verticale Bale, avec Bale APP et UH"
+text = "UNL\r\n315"
+position = ["N047.50.21.284", "E005.55.48.722"]
+size = 50
+controller_me = "EE"
+controller_others = ["SBC","UH"]
+controller_not_others = ["UE","STA"]
+
+[[sector_vertical_limit]]
+#comment "est Reims avec Strasbourg APP"
+text = "UNL\r\n195"
+position = ["N048.48.21.284", "E005.55.48.722"]
+size = 50
+controller_me = "EE"
+controller_others = ["STA"]
+
+[[sector_vertical_limit]]
+#comment "Sud Ouest Reims"
+text = "UNL\r\n345"
+position = ["N048.11.55.741", "E003.29.28.351"]
+size = 40
+controller_me = "EE"
+controller_others = ["PAR"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "when PAR or APTE connected"
+text = "UNL\r\n315"
+position = ["N049.40.04.768", "E004.14.36.072"]
+size = 40
+controller_me = "EE"
+controller_others = ["PAR","APTE"]
+
+[[sector_vertical_limit]]
+#comment "when PAR"
+text = "UNL\r\n385"
+position = ["N047.22.19.978", "E004.57.32.998"]
+size = 40
+controller_me = "EE"
+controller_others = ["PAR"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "when EEN with EE"
+text = "UNL\r\n265"
+position = ["N049.45.01.927", "E002.60.48.064"]
+size = 40
+controller_me = "EEN"
+controller_others = []
+controller_not_others = ["UR"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "when EEN with EE"
+text = "UNL\r\n265"
+position = ["N049.58.40.161", "E002.00.02.308"]
+size = 40
 controller_me = "EEN"
 controller_others = []
 default = true
 
 [[sector_vertical_limit]]
-text = "660\r\n295"
-position = ["N050.06.40.282", "E002.30.02.140"]
-size = 60
-controller_me = "EE"
-controller_others = []
-controller_not_others = ["EEN"]
-default = true
-
-[[sector_vertical_limit]]
-text = "660\r\n000"
-position = ["N048.35.28.573", "E006.17.43.534"]
-size = 60
-controller_me = "EE"
-controller_others = []
-controller_not_others = ["EES"]
-default = true
-
-[[sector_vertical_limit]]
-text = "660\r\n295"
-position = ["N048.35.28.573", "E006.17.43.534"]
-size = 60
-controller_me = "EE"
-controller_others = ["EES"]
-
-[[sector_vertical_limit]]
-text = "295\r\n145"
-position = ["N048.28.15.974", "E006.08.08.593"]
+#comment "when EEN with EE and PAR"
+text = "UNL\r\n315"
+position = ["N049.41.56.527", "E004.15.19.595"]
 size = 40
-controller_me = "EES"
-controller_others = []
-default = true
+controller_me = "EEN"
+controller_others = ["PAR","APTE","RPAW"]
+
+comment = "LFFF Definition"
+
+#comment "APTE plus bas"
 
 [[sector_vertical_limit]]
-#comment = "Below FF HP"
-text = "195\r\n000"
-position = ["N047.16.09.890","E004.50.55.427"]
+#comment "when EE not here and APTE here"
+text = "UNL\r\n315"
+position = ["N049.50.32.572", "E004.02.00.705"]
 size = 40
-controller_me = "EES"
-controller_others=["FF","FFU"]
+controller_me = "PAR"
+controller_others = ["APTE"]
+controller_not_others = ["EE","EEN"]
 
 [[sector_vertical_limit]]
-#comment = "Below FF HP"
-text = "195\r\n000"
-position = ["N047.16.09.890","E004.50.55.427"]
-size = 40
-controller_me = "EE"
-controller_others=["FF","FFU"]
-
-comment = "LFFF definitions"
-
-[[sector_vertical_limit]]
-text = "295\r\n000"
-position = ["N050.00.28.922", "E002.46.35.408"]
-size = 40
-controller_me = "FF"
-controller_others = ["EE", "EEN"]
-controller_not_others = ["FFN"]
+#comment "when EE not here and APTE here"
+text = "UNL\r\n265"
+position = ["N049.16.45.488", "E004.25.29.344"]
+size = 25
+controller_me = "PAR"
+controller_others = ["APTE"]
+controller_not_others = ["EE","EEN"]
 
 [[sector_vertical_limit]]
-text = "295\r\n000"
-position = ["N050.00.28.922", "E002.46.35.408"]
-size = 40
-controller_me = "FFN"
-controller_others = []
-default = true
+#comment "when EE not here and APTE here"
+text = "UNL\r\n265"
+position = ["N049.40.54.968", "E003.22.51.417"]
+size = 25
+controller_me = "PAR"
+controller_others = ["APTE"]
+controller_not_others = ["EE","EEN"]
 
 [[sector_vertical_limit]]
-text = "295\r\n000"
-position = ["N049.07.00.209", "E000.12.56.868"]
+#comment "when EE is here but not APTE"
+text = "315\r\nSFC"
+position = ["N049.40.32.572", "E004.12.00.705"]
 size = 40
-controller_me = "FF"
-controller_others = ["RR", "RRE"]
-controller_not_others = ["FFW","FFN"]
+controller_me = "PAR"
+controller_others = ["EE"]
+controller_not_others = ["APTE"]
+
+#comment "AOML plus bas"
 
 [[sector_vertical_limit]]
-# TH RT OT
-text = "295\r\n000"
-position = ["N048.21.12.214", "E000.34.21.203"]
+#comment "when AOML is connected but not EE"
+text = "UNL\r\n265"
+position = ["N048.58.21.215", "E003.51.27.388"]
 size = 40
-controller_me = "FFW"
+controller_me = "PAR"
+controller_others = ["AOML"]
+controller_not_others = ["EE"]
+
+[[sector_vertical_limit]]
+#comment "when AOML is connected but not EE"
+text = "UNL\r\n345"
+position = ["N048.13.37.161", "E003.33.04.805"]
+size = 40
+controller_me = "PAR"
+controller_others = ["AOML"]
+controller_not_others = ["EE"]
+
+#comment "ORGY plus bas"
+
+[[sector_vertical_limit]]
+#comment "when PAR and RR are connected but not ORGY"
+text = "295\r\nSFC"
+position = ["N048.03.53.149", "E000.25.04.269"]
+size = 40
+controller_me = "PAR"
+controller_others = ["RR"]
+controller_not_others = ["ORGY"]
+
+[[sector_vertical_limit]]
+#comment "when PAR, HPKZ and QQA are connected"
+text = "085\r\nSFC"
+position = ["N049.34.08.471", "E000.42.26.841"]
+size = 40
+controller_me = "PAR"
+controller_others = ["HPKZ","QQA"]
+
+[[sector_vertical_limit]]
+#comment "when PAR, RR is here, HPKZ not here"
+text = "295\r\nSFC"
+position = ["N049.22.17.308", "E000.19.54.597"]
+size = 40
+controller_me = "PAR"
+controller_others = ["RR"]
+controller_not_others = ["HPKZ"]
+
+[[sector_vertical_limit]]
+#comment "when PAR, PG_APP is here, HPKZ, ORGY and RR"
+text = "295\r\n195"
+position = ["N048.48.03.433", "E001.59.42.031"]
+size = 35
+controller_me = "PAR"
 controller_others = ["RR","RRE"]
 
 [[sector_vertical_limit]]
-# TH RT OT without RR (up to 660)
-text = "660\r\n000"
-position = ["N048.21.12.214", "E000.34.21.203"]
+#comment "when PAR, PG_APP is here, HPKZ, ORGY but not RR"
+text = "UNL\r\n195"
+position = ["N048.48.03.433", "E001.59.42.031"]
+size = 35
+controller_me = "PAR"
+controller_others = []
+controller_not_others = ["RR"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "when PAR, but no EE"
+text = "UNL\r\n195"
+position = ["N048.26.19.912", "E006.07.26.298"]
 size = 40
-controller_me = "FFW"
+controller_me = "PAR"
+controller_others = []
+controller_not_others = ["EE"]
+default = true
+
+#comment "APTE perspective"
+
+[[sector_vertical_limit]]
+#comment "when PAR connected"
+text = "315\r\nSFC"
+position = ["N049.45.00.621", "E004.11.56.736"]
+size = 28
+controller_me = "APTE"
+controller_others = ["PAR"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, north of APTE"
+text = "265\r\nSFC"
+position = ["N049.47.34.907", "E003.28.26.128"]
+size = 20
+controller_me = "APTE"
+controller_others = ["PAR"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, south east of APTE"
+text = "265\r\nSFC"
+position = ["N049.16.55.651", "E004.34.53.998"]
+size = 20
+controller_me = "APTE"
+controller_others = ["PAR"]
+default = true
+
+#comment "AOML perspective"
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, south of AOML"
+text = "345\r\nSFC"
+position = ["N048.05.27.733", "E003.40.14.296"]
+size = 40
+controller_me = "AOML"
+controller_others = ["PAR"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, middle of AOML"
+text = "265\r\nSFC"
+position = ["N048.49.26.842", "E004.16.49.791"]
+size = 30
+controller_me = "AOML"
+controller_others = ["PAR"]
+default = true
+
+#comment "RPAW perspective"
+
+[[sector_vertical_limit]]
+#comment "when PAR connected and QQ online"
+text = "265\r\n085"
+position = ["N050.30.04.174", "E001.37.20.164"]
+size = 50
+controller_me = "RPAW"
+controller_others = ["QQA"]
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, EE online but not QQ"
+text = "265\r\nSFC"
+position = ["N050.30.04.174", "E001.37.20.164"]
+size = 50
+controller_me = "RPAW"
+controller_others = ["EE"]
+controller_not_others = ["QQA"]
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, RR offline"
+text = "UNL\r\nSFC"
+position = ["N049.09.59.325", "E000.18.40.091"]
+size = 50
+controller_me = "RPAW"
+controller_others = []
+controller_not_others = ["RR","RRE","HPKZ"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, RR online but not ORGY and HPKZ"
+text = "295\r\nSFC"
+position = ["N049.09.59.325", "E000.18.40.091"]
+size = 50
+controller_me = "RPAW"
+controller_others = ["RR","RRE"]
+controller_not_others = ["HPKZ","ORGY"]
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, HPKZ is here but no RR"
+text = "UNL\r\n295"
+position = ["N049.40.54.949", "E000.21.02.146"]
+size = 50
+controller_me = "RPAW"
+controller_others = ["HPKZ"]
+controller_not_others = ["RR","RRE"]
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, HPKZ is here but no ORGY and no RR"
+text = "UNL\r\nSFC"
+position = ["N047.56.30.237", "E000.19.01.248"]
+size = 50
+controller_me = "RPAW"
+controller_others = ["HPKZ"]
+controller_not_others = ["RR","RRE","ORGY"]
+
+[[sector_vertical_limit]]
+#comment "when PAR connected, HPKZ is here, ORGY as well and no RR"
+text = "UNL\r\n295"
+position = ["N047.56.30.237", "E000.19.01.248"]
+size = 50
+controller_me = "RPAW"
+controller_others = ["HPKZ","ORGY"]
+controller_not_others = ["RR","RRE"]
+
+#comment "ORGY perspective"
+
+[[sector_vertical_limit]]
+#comment "when no one else is connected"
+text = "UNL\r\nSFC"
+position = ["N047.56.30.237", "E000.19.01.248"]
+size = 50
+controller_me = "ORGY"
+controller_others = []
 controller_not_others = ["RR","RRE"]
 default = true
 
 [[sector_vertical_limit]]
-# MZQX above TP TB TN
-text = "660\r\n295"
-position = ["N049.42.40.221", "E000.31.23.168"]
-size = 40
-controller_me = "FFW"
-controller_not_others = ["RR","RRE"]
-default = true
-
-[[sector_vertical_limit]]
-# MSQX above DGDO without RR
-text = "660\r\n295"
-position = ["N048.40.23.315", "E002.05.03.982"]
-size = 40
-controller_me = "FFW"
-controller_others = []
-controller_not_others = ["FFW","RR","RRE"]
-default = true
-
-[[sector_vertical_limit]]
-# West Sectors with RR without FFW
-text = "295\r\n000"
-position = ["N049.03.27.972", "E000.50.27.678"]
-size = 40
-controller_me = "FFN"
+#comment "when no one else is connected but RR is here"
+text = "295\r\nSFC"
+position = ["N047.56.30.237", "E000.19.01.248"]
+size = 50
+controller_me = "ORGY"
 controller_others = ["RR","RRE"]
-controller_not_others = ["FFW"]
+
+#comment "DGTJ perspective"
 
 [[sector_vertical_limit]]
-# West Sectors without RR without FFW
-text = "660\r\n000"
-position = ["N049.03.27.972", "E000.50.27.678"]
+#comment "languette Bordeaux"
+text = "295\r\nSFC"
+position = ["N047.50.24.661", "E001.48.44.736"]
+size = 50
+controller_me = "DGTJ"
+controller_others = ["PAR","PGA","POA"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "sud est 1"
+text = "UNL\r\n195"
+position = ["N047.03.57.272", "E003.35.49.101"]
 size = 40
-controller_me = "FFN"
+controller_me = "DGTJ"
+controller_others = ["PAR"]
+default = true
+
+[[sector_vertical_limit]]
+#comment "sud est 2"
+text = "385\r\n195"
+position = ["N047.23.24.571", "E004.59.57.773"]
+size = 40
+controller_me = "DGTJ"
+controller_others = ["PAR"]
+default = true
+
+#comment "RPAE perspective"
+
+[[sector_vertical_limit]]
+#comment "est Reims, when Reims offline"
+text = "UNL\r\n195"
+position = ["N047.90.21.284", "E005.55.48.722"]
+size = 50
+controller_me = "RPAE"
 controller_others = []
-controller_not_others = ["FFW","RR","RRE"]
+controller_not_others = ["EE"]
 default = true
 
 [[sector_vertical_limit]]
-# MSQX above DGDO without RR without FFW
-text = "660\r\n295"
-position = ["N048.40.23.315", "E002.05.03.982"]
+#comment "above AOML when not here, but with Reims"
+text = "345\r\nSFC"
+position = ["N048.12.19.469", "E003.31.22.825"]
+size = 50
+controller_me = "RPAE"
+controller_others = ["EE"]
+controller_not_others = ["AOML"]
+
+[[sector_vertical_limit]]
+#comment "above AOML when not here, but with Reims"
+text = "265\r\nSFC"
+position = ["N048.53.01.914", "E004.10.13.120"]
 size = 40
-controller_me = "FFN"
+controller_me = "RPAE"
+controller_others = ["EE"]
+controller_not_others = ["AOML"]
+
+[[sector_vertical_limit]]
+#comment "south east when DGTJ not here, but with Reims"
+text = "385\r\n195"
+position = ["N047.25.35.416", "E004.55.21.220"]
+size = 40
+controller_me = "RPAE"
+controller_others = ["EE"]
+controller_not_others = ["DGTJ"]
+
+[[sector_vertical_limit]]
+#comment "languette Bordeaux when DGTJ not here, but with Reims"
+text = "295\r\nSFC"
+position = ["N047.50.24.661", "E001.48.44.736"]
+size = 50
+controller_me = "RPAE"
 controller_others = []
-controller_not_others = ["FFW","RR","RRE"]
+controller_not_others = ["DGTJ"]
 default = true
 
-# FFS
-[[sector_vertical_limit]]
-#comment = "HP Sector"
-text = "660\r\n000"
-position = ["N047.23.39.901","E003.30.13.568"]
-size = 40
-controller_me = "FF"
-controller_others=["EE","EES","RR","RRE"]
-controller_not_others=["FFS"]
+#comment "LMH perspective"
 
 [[sector_vertical_limit]]
-#comment = "HP Sector"
-text = "660\r\n000"
-position = ["N047.23.39.901","E003.00.13.568"]
-size = 40
-controller_me = "FFS"
-controller_others=["EE","EES","RR","RRE"]
-
-[[sector_vertical_limit]]
-#comment = "HP Sector above LFEE"
-text = "660\r\n195"
-position = ["N047.16.09.890","E004.50.55.427"]
-size = 40
-controller_me = "FF"
-controller_others=["EE","EES","RR","RRE"]
-controller_not_others=["FFS"]
-
-[[sector_vertical_limit]]
-#comment = "HP Sector above LFEE"
-text = "660\r\n195"
-position = ["N047.16.09.890","E004.50.55.427"]
-size = 40
-controller_me = "FFS"
-controller_others=["EE","EES","RR","RRE"]
-
-[[sector_vertical_limit]]
-#comment = "DG AO AR Below LFEE"
-text = "295\r\n000"
-position = ["N048.47.00.320","E003.32.50.502"]
-size = 40
-controller_me = "FF"
-controller_others=["EE","EES","RR","RRE"]
-controller_not_others=["FFS"]
-
-[[sector_vertical_limit]]
-#comment = "DG AO AR Below LFEE"
-text = "295\r\n000"
-position = ["N048.47.09.890","E003.32.50.502"]
-size = 40
-controller_me = "FFS"
-controller_others=["EE","EES","RR","RRE"]
-
-[[sector_vertical_limit]]
-#comment = "Below BB P Sector"
-text = "295\r\n000"
-position = ["N047.41.34.328", "E001.58.11.473"]
-size = 40
-controller_me = "FF"
-controller_others=[]
-default = true
-
-[[sector_vertical_limit]]
-#comment = "Below BB P Sector"
-text = "295\r\n000"
-position = ["N047.41.34.328", "E001.58.11.473"]
-size = 40
-controller_me = "FFS"
-controller_others=[]
+text = "UNL\r\n195"
+position = ["N047.02.07.838", "E003.47.14.891"]
+size = 50
+controller_me = "LMH"
+controller_others = []
 default = true
 
 comment = "LFRR Definition"
 
 [[sector_vertical_limit]]
 text = "660\r\n295"
-position = ["N049.07.00.209", "E000.12.56.868"]
+position = ["N048.07.00.209", "E000.12.56.868"]
 size = 60
 controller_me = "RR"
 controller_others = []
