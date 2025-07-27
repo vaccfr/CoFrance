@@ -224,6 +224,35 @@ controller_others = ["PAR","APTE","RPAW"]
 
 comment = "LFFF Definition"
 
+#comment "Reims here on the east"
+
+[[sector_vertical_limit]]
+#comment "US sector"
+text = "345\r\nSFC"
+position = ["N048.10.05.340", "E003.34.51.029"]
+size = 40
+controller_me = "PAR"
+controller_others = ["EE"]
+controller_not_others = []
+
+[[sector_vertical_limit]]
+#comment "UJ sector"
+text = "385\r\nSFC"
+position = ["N047.25.24.995", "E004.56.12.107"]
+size = 40
+controller_me = "PAR"
+controller_others = ["EE"]
+controller_not_others = []
+
+[[sector_vertical_limit]]
+#comment "languette BB"
+text = "265\r\nSFC"
+position = ["N047.44.34.847", "E001.55.45.751"]
+size = 40
+controller_me = "PAR"
+controller_others = ["EE"]
+controller_not_others = []
+
 #comment "APTE plus bas"
 
 [[sector_vertical_limit]]
