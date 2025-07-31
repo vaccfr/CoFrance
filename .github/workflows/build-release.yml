@@ -1,0 +1,68 @@
+name: CoFrance Build
+
+on:
+  push:
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Command Prompt for Microsoft
+        uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          arch: x86
+
+      - name: Get commit short SHA
+        uses: benjlevesque/short-sha@v2.2
+        id: short-sha
+
+      - name: Get version
+        id: get_version
+        shell: bash
+        run: |
+          version="${{ steps.short-sha.outputs.sha }}"
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            version=$(echo ${{ github.ref }} | sed -E 's/refs\/tags\/(v)?//g')
+          fi
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Install Visual Studio 2022 Build Tools
+        run: choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Component.CoreBuildTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.CoreBuildTools"
+
+      - name: Install and build vcpkg
+        run: |
+          vcpkg install --triplet=x86-windows-static
+          vcpkg integrate install
+
+      - name: Set version in header and resource files
+        run: |
+          (Get-Content Constants.h).replace('@appveyor_build', '${{ steps.get_version.outputs.version }}') | Set-Content Constants.h
+          (Get-Content CoFrance.rc).replace('@appveyor_build', '${{ steps.get_version.outputs.version }}') | Set-Content CoFrance.rc
+
+      - name: Build DLL
+        run: msbuild "CoFrance.sln" /p:VcpkgEnableManifest=true /p:Platform=x86 /p:Configuration=Release
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoFrance.dll
+          path: Release/CoFrance.dll
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: CoFrance version ${{ steps.get_version.outputs.version }}
+          prerelease: false
+          draft: true
+          files: |
+              Release/CoFrance.dll
+              config.toml
