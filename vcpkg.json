@@ -8,5 +8,6 @@
         "nlohmann-json",
         "cpp-httplib",
         "toml11"
-    ]
+    ],
+   "builtin-baseline": "2b322364f06308bdd24823f9d8f03fe0cc86fd46f"
   }

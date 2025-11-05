@@ -55,9 +55,6 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 
     RegisterTagItemFunction("Open ASP Popup", CoFranceTags::FUNCTION_OPEN_ASP);
 
-    RegisterTagItemType("Stand", CoFranceTags::STAND);
-    RegisterTagItemFunction("Stand popup", CoFranceTags::FUNCTION_STAND_MENU);
-
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
 
@@ -98,17 +95,6 @@ bool CoFrancePlugIn::OnCompileCommand(const char* sCommandLine)
         }
         else {
             DisplayUserMessage("CoFrance", "Debug", "Debug disabled", true, true, false, true, false);
-        }
-        return true;
-    }
-
-    if (strcmp(sCommandLine, ".cofrance stand") == 0) {
-        StandAssignerEnabled = !StandAssignerEnabled;
-        if (StandAssignerEnabled) {
-            DisplayUserMessage("CoFrance", "Stand", "Auto assigner enabled", true, true, false, true, false);
-        }
-        else {
-            DisplayUserMessage("CoFrance", "Stand", "Auto assigner disabled", true, true, false, true, false);
         }
         return true;
     }
@@ -510,42 +496,10 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
         }
 
     }
-
-    if (ItemCode == CoFranceTags::STAND) {
-        if (!FlightPlan.IsValid())
-            return;
-        string Stand = FlightPlan.GetControllerAssignedData().GetFlightStripAnnotation(CoFranceTags::ANNOTATION_STAND);
-        strcpy_s(sItemString, 16, Stand.c_str());
-    }
 }
 
 void CoFrancePlugIn::OnTimer(int Counter)
 {
-    for (auto it = PendingStands.begin(), next_it = it; it != PendingStands.end(); it = next_it)
-    {
-        bool must_delete = false;
-        if (it->second.valid() && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-            string stand = it->second.get();
-            FlightPlanSelect(it->first.c_str()).GetControllerAssignedData().SetFlightStripAnnotation(CoFranceTags::ANNOTATION_STAND, stand.c_str());
-            if (AssignedStandTime.find(it->first.c_str()) != AssignedStandTime.end()) {
-                AssignedStandTime[it->first.c_str()] = std::chrono::system_clock::now();
-            }
-            else {
-                AssignedStandTime.insert(make_pair(it->first.c_str(), std::chrono::system_clock::now()));
-            }
-            if (Debug) {
-                DisplayUserMessage("CoFrance", "Stand", string("Recieved stand " + stand + " for " + it->first.c_str()).c_str(), true, false, false, false, false);
-            }
-            must_delete = true;
-        }
-
-        ++next_it;
-        if (must_delete)
-        {
-            PendingStands.erase(it);
-        }
-    }
-
     if (CPDLCAPiData.valid() && CPDLCAPiData.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
         string d = CPDLCAPiData.get();
 
@@ -671,16 +625,6 @@ void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POI
             SharedData::OCL_Tooltip_pt = Pt;
         }
     }
-
-    if (FunctionId == CoFranceTags::FUNCTION_STAND_MENU) {
-		OpenPopupList(Area, "Stand", 1);
-		AddPopupListElement("Clear", "", CoFranceTags::FUNCTION_STAND_CLEAR, false, POPUP_ELEMENT_NO_CHECKBOX, false);
-    }
-
-    if (FunctionId == CoFranceTags::FUNCTION_STAND_CLEAR) {
-		FlightPlanSelectASEL().GetControllerAssignedData().SetFlightStripAnnotation(CoFranceTags::ANNOTATION_STAND, "");
-    }
-
 }
 
 void CoFrancePlugIn::OnFlightPlanControllerAssignedDataUpdate(CFlightPlan FlightPlan, int DataType)
@@ -711,55 +655,6 @@ void CoFrancePlugIn::OnFlightPlanControllerAssignedDataUpdate(CFlightPlan Flight
     // Send out the event
     async(&CoFrancePlugIn::SendCPDLCEvent, this, string(FlightPlan.GetCallsign()), DataType, message);
 
-}
-
-void CoFrancePlugIn::OnRadarTargetPositionUpdate(CRadarTarget RadarTarget)
-{
-
-    if (StandAssignerEnabled) {
-        CFlightPlan CorrFp = RadarTarget.GetCorrelatedFlightPlan();
-        bool toRefresh = false;
-        if (!CorrFp.IsValid() || !ControllerMyself().IsController())
-            return;
-
-        string stand = string(CorrFp.GetControllerAssignedData().GetFlightStripAnnotation(CoFranceTags::ANNOTATION_STAND));
-
-        // Check if we need to refresh the previouly assigned stand
-        if (AssignedStandTime.find(string(CorrFp.GetCallsign())) != AssignedStandTime.end()) {
-            std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - AssignedStandTime[string(CorrFp.GetCallsign())];
-            if (elapsed_seconds.count() > StandAssignmentRefresh) {
-                toRefresh = true;
-            }
-        }
-
-        // There is already an assigned stand
-        if (!stand.empty() && !toRefresh)
-            return;
-
-        if (std::find(StandApiAvailableFor.begin(), StandApiAvailableFor.end(), string(CorrFp.GetFlightPlanData().GetDestination())) != StandApiAvailableFor.end()) {
-
-            if (CorrFp.GetDistanceToDestination() < 10) {
-
-                if (PendingStands.find(string(CorrFp.GetCallsign())) == PendingStands.end()) {
-                    if (Debug) {
-                        DisplayUserMessage("CoFrance", "Stand", string("Requesting stand for " + string(CorrFp.GetCallsign())).c_str(), true, false, false, false, false);
-                    }
-                    PendingStands.insert(std::make_pair(string(CorrFp.GetCallsign()),
-                        async(&CoFrancePlugIn::LoadRemoteStandAssignment, this, string(CorrFp.GetCallsign()), string(CorrFp.GetFlightPlanData().GetOrigin()),
-                            string(CorrFp.GetFlightPlanData().GetDestination()),
-                            string(string("") + CorrFp.GetFlightPlanData().GetAircraftWtc()))));
-                }
-            }
-        }
-    }
-}
-
-void CoFrancePlugIn::OnFlightPlanDisconnect(CFlightPlan FlightPlan)
-{
-    auto it = AssignedStandTime.find(string(FlightPlan.GetCallsign()));
-    if (it != AssignedStandTime.end()) {
-        AssignedStandTime.erase(it);
-    }
 }
 
 void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
@@ -798,32 +693,6 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
     catch (const std::exception& exc) {
         CanLoadRadarScreen = false;
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading config file " + string(exc.what())).c_str(), false, false, false, false, false);
-    }
-
-    DisplayUserMessage("Message", "CoFrance PlugIn", "Reading stand API config...", false, false, false, false, false);
-
-    try {
-        if (fromWeb) {
-            httplib::Client cli(API_URL_BASE);
-            if (auto res = cli.Get(CONFIG_ONLINE_STAND_API_URL_PATH)) {
-                if (res->status == 200) {
-                    std::istringstream is(res->body, std::ios_base::binary | std::ios_base::in);
-
-                    toml::value StandApiConfig = toml::parse(is, "std::string");
-
-                    StandApiAvailableFor = toml::find<vector<string>>(StandApiConfig, "data", "icaos");
-
-                    DisplayUserMessage("Message", "CoFrance PlugIn", string("Stand API available for: " + join_vector(StandApiAvailableFor)).c_str(), false, false, false, false, false);
-                }
-            }
-
-            cli.stop();
-
-        }
-
-    }
-    catch (const std::exception& exc) {
-        DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading stand api file " + string(exc.what())).c_str(), false, false, false, false, false);
     }
 }
 
@@ -883,42 +752,6 @@ string CoFrancePlugIn::SendCPDLCEvent(string ac_callsign, int event_type, string
     }
 
     return "null";
-}
-
-string CoFrancePlugIn::LoadRemoteStandAssignment(string callsign, string origin, string destination, string wtc)
-{
-    try {
-        httplib::Client cli(API_URL_BASE);
-        httplib::Params params;
-        params.emplace("callsign", callsign);
-        params.emplace("dep", origin);
-        params.emplace("arr", destination);
-        params.emplace("wtc", wtc);
-
-
-        if (auto res = cli.Post(CONFIG_ONLINE_STAND_API_QUERY_URL_PATH, params)) {
-            if (res->status == 200) {
-                
-                std::istringstream is(res->body, std::ios_base::binary | std::ios_base::in);
-
-                toml::value StandData = toml::parse(is, "std::string");
-
-                cli.stop();
-                return toml::find<string>(StandData, "data", "stand");
-            }
-            else {
-                cli.stop();
-                return "NoGate";
-            }
-        }
-
-        cli.stop();
-    }
-    catch (const std::exception& exc) {
-        
-    }
-
-    return "NoGate";
 }
 
 string CoFrancePlugIn::LoadOCLData()
