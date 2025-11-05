@@ -9,5 +9,11 @@
         "cpp-httplib",
         "toml11"
     ],
-   "builtin-baseline": "2b322364f06308bdd24823f9d8f03fe0cc86fd46f"
+   "builtin-baseline": "7220a4eebf20515cdd9c34721e15ca082bae9038",
+    "overrides": [
+        {
+            "name": "cpp-httplib",
+            "version": "0.18.3"
+        }
+    ]
   }
