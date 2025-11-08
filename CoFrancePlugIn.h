@@ -36,24 +36,14 @@ public:
 
     void OnFlightPlanControllerAssignedDataUpdate(CFlightPlan FlightPlan, int DataType);
 
-    string LoadRemoteStandAssignment(string callsign, string origin, string destination, string wtc);
-
-    void OnRadarTargetPositionUpdate(CRadarTarget RadarTarget);
-
-    void OnFlightPlanDisconnect(CFlightPlan FlightPlan);
-
     toml::value CoFranceConfig;
-    vector<string> StandApiAvailableFor;
-    map<string, future<string>> PendingStands;
-    map<string, std::chrono::system_clock::time_point> AssignedStandTime;
+
     string DetailedAircraft;
     string DllPath;
     map<string, string> ConflictGroups;
     bool CanLoadRadarScreen = true;
     bool Blink = false;
     bool Debug = false;
-    bool StandAssignerEnabled = true;
-    double StandAssignmentRefresh = 30;
 
     CSTCA *Stca = nullptr;
 
@@ -64,8 +54,6 @@ public:
     string SendCPDLCEvent(string ac_callsign, int event_type, string value);
 
     string LoadOCLData();
-
-    string BuildScratchPadWithStand(string currentScratchPad, string stand);
 
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;

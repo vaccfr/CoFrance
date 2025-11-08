@@ -8,5 +8,12 @@
         "nlohmann-json",
         "cpp-httplib",
         "toml11"
+    ],
+   "builtin-baseline": "7220a4eebf20515cdd9c34721e15ca082bae9038",
+    "overrides": [
+        {
+            "name": "cpp-httplib",
+            "version": "0.18.3"
+        }
     ]
   }
