@@ -55,6 +55,8 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 
     RegisterTagItemFunction("Open ASP Popup", CoFranceTags::FUNCTION_OPEN_ASP);
 
+    RegisterTagItemType("Stand", CoFranceTags::STAND);
+
     DisplayUserMessage("Message", "CoFrance PlugIn", string("Version " + string(MY_PLUGIN_VERSION) + " loaded.").c_str(), false, false, false, false, false);
 }
 
@@ -494,7 +496,13 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
         else {
             strcpy_s(sItemString, 16, "");
         }
+    }
 
+    if (ItemCode == CoFranceTags::STAND) {
+        if (!FlightPlan.IsValid())
+            return;
+
+        strcpy_s(sItemString, 16, "INOP");
     }
 }
 
