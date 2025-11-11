@@ -44,7 +44,7 @@ jobs:
 
       - name: Set version in header and resource files
         run: |
-          (Get-Content Constants.h).replace('@appveyor_build', '${{ steps.get_version.outputs.version }}') | Set-Content Constants.h
+          (Get-Content CoFrancePlugIn.h).replace('@appveyor_build', '${{ steps.get_version.outputs.version }}') | Set-Content CoFrancePlugIn.h
           (Get-Content CoFrance.rc).replace('@appveyor_build', '${{ steps.get_version.outputs.version }}') | Set-Content CoFrance.rc
 
       - name: Build DLL

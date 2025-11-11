@@ -6,11 +6,6 @@
 #include <sstream>
 #include "nlohmann/json.hpp"
 
-#define MY_PLUGIN_NAME "CoFrance"
-#define MY_PLUGIN_VERSION "@appveyor_build"
-#define MY_PLUGIN_DEVELOPER "Pierre Ferran"
-#define MY_PLUGIN_COPYRIGHT "GPL v3"
-
 #define CONFIG_ONLINE_URL_BASE "https://raw.githubusercontent.com"
 #define CONFIG_ONLINE_URL_PATH "/vaccfr/CoFrance/master/config.toml"
 
