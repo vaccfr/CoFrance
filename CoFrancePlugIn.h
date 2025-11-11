@@ -9,6 +9,11 @@
 #include "STCA.h"
 #include "nlohmann/json.hpp"
 
+#define MY_PLUGIN_NAME "CoFrance"
+#define MY_PLUGIN_VERSION "@appveyor_build"
+#define MY_PLUGIN_DEVELOPER "Pierre Ferran"
+#define MY_PLUGIN_COPYRIGHT "GPL v3"
+
 using namespace EuroScopePlugIn;
 using namespace Gdiplus;
 using namespace std;
