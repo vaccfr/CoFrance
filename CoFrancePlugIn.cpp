@@ -44,8 +44,6 @@ CoFrancePlugIn::CoFrancePlugIn(void):CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE
 
     RegisterTagItemType("STCA Indicator", CoFranceTags::STCA);
 
-    RegisterTagItemType("CPDLC Flag", CoFranceTags::CPDLC_STATUS);
-
     RegisterTagItemType("OCL Flag", CoFranceTags::OCL_FLAG);
 
     RegisterTagItemType("Assigned Speed", CoFranceTags::ASSIGNED_SPEED);
@@ -469,35 +467,6 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
         }
     }
 
-    if (ItemCode == CoFranceTags::CPDLC_STATUS) {
-        if (!FlightPlan.IsValid())
-            return;
-
-        if (CPDLCStatusTagMap.find(FlightPlan.GetCallsign()) != CPDLCStatusTagMap.end()) 
-        {
-            // Status is response pending
-            if (CPDLCStatusTagMap[FlightPlan.GetCallsign()] == 1) {
-                *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
-
-                auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "intention_code_departure");
-                *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
-            }
-
-            // Status is response negative
-            if (CPDLCStatusTagMap[FlightPlan.GetCallsign()] == 2) {
-                *pColorCode = EuroScopePlugIn::TAG_COLOR_RGB_DEFINED;
-            
-                auto element_colour = toml::find<std::vector<int>>(CoFranceConfig, "colours", "conflict_group_losange");
-                *pRGB = RGB(element_colour[0], element_colour[1], element_colour[2]);
-            }
-            
-            strcpy_s(sItemString, 16, CoFranceCharacters::DatalinkIndicator.c_str());
-        }
-        else {
-            strcpy_s(sItemString, 16, "");
-        }
-    }
-
     if (ItemCode == CoFranceTags::STAND) {
         if (!FlightPlan.IsValid())
             return;
@@ -508,25 +477,6 @@ void CoFrancePlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarg
 
 void CoFrancePlugIn::OnTimer(int Counter)
 {
-    if (CPDLCAPiData.valid() && CPDLCAPiData.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-        string d = CPDLCAPiData.get();
-
-        CPDLCStatusTagMap.clear();
-        std::vector<std::string> row = split(d, '|');
-        for (auto r : row) {
-
-            std::vector<std::string> column = split(r, ',');
-            if (column.size() >= 2) {
-                try {
-                    CPDLCStatusTagMap.insert(make_pair(column[0], stoi(column[1])));
-                }
-                catch (const std::exception& exc) {
-
-                }
-            }
-        }
-    }
-
     if (RawOCLData.valid() && RawOCLData.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
         string d = RawOCLData.get();
 
@@ -545,56 +495,9 @@ void CoFrancePlugIn::OnTimer(int Counter)
     if (Counter % 3 == 0 && !performanceMode)
         Stca->OnRefresh(this);
 
-    // Every 5 seconds send CPDLC data and poll OCL data
+    // Every 5 seconds poll OCL data
     if (Counter % 5 == 0) {
         if (ControllerMyself().IsValid() && ControllerMyself().IsController()) {
-            string message = "";
-
-            for (CFlightPlan fp = FlightPlanSelectFirst(); fp.IsValid(); fp = FlightPlanSelectNext(fp)) {
-
-                if (fp.GetState() == EuroScopePlugIn::FLIGHT_PLAN_STATE_NON_CONCERNED)
-                    continue;
-
-                message += fp.GetCallsign();
-                message += ",";
-                message += fp.GetTrackingControllerIsMe() ? "1" : "0";
-                message += ",";
-                message += fp.GetFlightPlanData().GetOrigin();
-                message += ",";
-                message += fp.GetFlightPlanData().GetDestination();
-                message += ",";
-
-
-                
-                for (int k = fp.GetExtractedRoute().GetPointsCalculatedIndex(); k < fp.GetExtractedRoute().GetPointsNumber(); k++) {
-                    message += fp.GetExtractedRoute().GetPointName(k);
-                    if (k+1 != fp.GetExtractedRoute().GetPointsNumber())
-                        message += "-";
-                }
-
-                message += ",";
-
-                CController NextController = ControllerSelect(fp.GetCoordinatedNextController());
-                if (NextController.IsValid()) {
-                    message += std::to_string(NextController.GetPrimaryFrequency());
-                    message += ",";
-                    message += NextController.GetCallsign();
-                    message += ",";
-                }
-                else {
-                    message += ",";
-                    message += ",";
-                }
-
-                message += "|";
-            }
-
-            CPDLCAPiData = async(&CoFrancePlugIn::SendCPDLCActiveAircrafts, this, string(ControllerMyself().GetCallsign()), message);
-
-            //
-            // Polling OCL
-            // 
-
             if (SharedData::OCLEnabled) {
                 RawOCLData = async(&CoFrancePlugIn::LoadOCLData, this);
             }
@@ -635,36 +538,6 @@ void CoFrancePlugIn::OnFunctionCall(int FunctionId, const char* sItemString, POI
     }
 }
 
-void CoFrancePlugIn::OnFlightPlanControllerAssignedDataUpdate(CFlightPlan FlightPlan, int DataType)
-{
-
-    // Send CPDLC events
-    if (!FlightPlan.IsValid() || !FlightPlan.GetTrackingControllerIsMe())
-        return;
-
-    // FlightPlan is CPDLC enabled
-    if (CPDLCStatusTagMap.find(FlightPlan.GetCallsign()) == CPDLCStatusTagMap.end())
-        return;
-
-    string message = "";
-    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_TEMPORARY_ALTITUDE && FlightPlan.GetControllerAssignedData().GetClearedAltitude() >= 100)
-        message = std::to_string(FlightPlan.GetControllerAssignedData().GetClearedAltitude() / 100);
-    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_DIRECT_TO)
-        message = FlightPlan.GetControllerAssignedData().GetDirectToPointName();
-    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_HEADING && FlightPlan.GetControllerAssignedData().GetAssignedHeading() != 0)
-        message = std::to_string(FlightPlan.GetControllerAssignedData().GetAssignedHeading());
-    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_SQUAWK)
-        message = FlightPlan.GetControllerAssignedData().GetSquawk();
-    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_SPEED)
-        message = std::to_string(FlightPlan.GetControllerAssignedData().GetAssignedSpeed());
-    if (DataType == EuroScopePlugIn::CTR_DATA_TYPE_MACH)
-        message = std::to_string(FlightPlan.GetControllerAssignedData().GetAssignedMach());
-
-    // Send out the event
-    async(&CoFrancePlugIn::SendCPDLCEvent, this, string(FlightPlan.GetCallsign()), DataType, message);
-
-}
-
 void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
 {
     DisplayUserMessage("Message", "CoFrance PlugIn", "Reading config file...", false, false, false, false, false);
@@ -702,64 +575,6 @@ void CoFrancePlugIn::LoadConfigFile(bool fromWeb)
         CanLoadRadarScreen = false;
         DisplayUserMessage("Message", "CoFrance PlugIn", string("Error reading config file " + string(exc.what())).c_str(), false, false, false, false, false);
     }
-}
-
-string CoFrancePlugIn::SendCPDLCActiveAircrafts(string my_callsign, string message)
-{
-    string r = "null";
-
-    try {
-        httplib::Client cli("http://127.0.0.1:9596");
-        cli.set_connection_timeout(0, 500000);
-
-        httplib::Params params;
-        params.emplace("my_callsign", my_callsign);
-        params.emplace("data", message);
-
-        if (auto res = cli.Post("/api/ping", params)) {
-            if (res->status == 200) {
-                cli.stop();
-                return res->body;
-            }
-            else {
-                r = "null";
-            }
-        }
-
-        cli.stop();
-    }
-    catch (const std::exception& exc) {
-
-    }
-
-    return r;
-}
-
-string CoFrancePlugIn::SendCPDLCEvent(string ac_callsign, int event_type, string value)
-{
-    try {
-        httplib::Client cli("http://127.0.0.1:9596");
-        cli.set_connection_timeout(0, 500000);
-
-        httplib::Params params;
-        params.emplace("callsign", ac_callsign);
-        params.emplace("event", std::to_string(event_type));
-        params.emplace("value", value);
-
-        if (auto res = cli.Post("/api/event", params)) {
-            if (res->status == 200) {
-                cli.stop();
-                return "ok";
-            }
-        }
-
-        cli.stop();
-    }
-    catch (const std::exception& exc) {
-
-    }
-
-    return "null";
 }
 
 string CoFrancePlugIn::LoadOCLData()

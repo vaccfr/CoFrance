@@ -39,8 +39,6 @@ public:
 
     void OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area);
 
-    void OnFlightPlanControllerAssignedDataUpdate(CFlightPlan FlightPlan, int DataType);
-
     toml::value CoFranceConfig;
 
     string DetailedAircraft;
@@ -54,17 +52,10 @@ public:
 
     void LoadConfigFile(bool fromWeb = true);
 
-    string SendCPDLCActiveAircrafts(string my_callsign, string message);
-
-    string SendCPDLCEvent(string ac_callsign, int event_type, string value);
-
     string LoadOCLData();
 
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
-
-    std::future<string> CPDLCAPiData;
-    map<string, int> CPDLCStatusTagMap;
 
     std::future<string> RawOCLData;
     nlohmann::json OCLData;
