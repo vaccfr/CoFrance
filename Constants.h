@@ -29,7 +29,6 @@ namespace CoFranceTags {
     const int APP_INTENTION = 15;
     const int VZ = 16;
     const int STCA = 17;
-    const int CPDLC_STATUS = 18;
     const int OCL_FLAG = 19;
     const int ASSIGNED_SPEED = 20;
     const int STAND = 21;
