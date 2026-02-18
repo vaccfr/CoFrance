@@ -83,12 +83,12 @@ namespace StaticColours {
 }
 
 namespace SharedData {
-    static bool OCLEnabled = true;
-    static nlohmann::json OCLData;
+    inline bool OCLEnabled = false;
+    inline nlohmann::json OCLData;
 
-    static auto OCL_Tooltip_timer = std::chrono::system_clock::now();
-    static string OCL_Tooltip_string;
-    static POINT OCL_Tooltip_pt;
+    inline auto OCL_Tooltip_timer = std::chrono::system_clock::now();
+    inline string OCL_Tooltip_string;
+    inline POINT OCL_Tooltip_pt;
 }
 
 static bool HasOCL(string callsign) {

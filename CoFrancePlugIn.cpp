@@ -495,8 +495,8 @@ void CoFrancePlugIn::OnTimer(int Counter)
     if (Counter % 3 == 0 && !performanceMode)
         Stca->OnRefresh(this);
 
-    // Every 5 seconds poll OCL data
-    if (Counter % 5 == 0) {
+    // Every 30 seconds poll OCL data
+    if (Counter % 30 == 0) {
         if (ControllerMyself().IsValid() && ControllerMyself().IsController()) {
             if (SharedData::OCLEnabled) {
                 // Don't start a new OCL fetch if the previous one is still in-flight.
