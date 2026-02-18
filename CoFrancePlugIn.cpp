@@ -499,7 +499,13 @@ void CoFrancePlugIn::OnTimer(int Counter)
     if (Counter % 5 == 0) {
         if (ControllerMyself().IsValid() && ControllerMyself().IsController()) {
             if (SharedData::OCLEnabled) {
-                RawOCLData = async(&CoFrancePlugIn::LoadOCLData, this);
+                // Don't start a new OCL fetch if the previous one is still in-flight.
+                if (RawOCLData.valid() &&
+                    RawOCLData.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
+                    DisplayUserMessage("Message", "CoFrance PlugIn", string("Skipping OCL data refresh, previous query still pending ").c_str(), false, false, false, false, false);
+                    return;
+                }
+                RawOCLData = async(launch::async, &CoFrancePlugIn::LoadOCLData, this);
             }
         }
     }
@@ -582,6 +588,8 @@ string CoFrancePlugIn::LoadOCLData()
     try {
         httplib::Client cli("https://nattrak.vatsim.net");
         cli.set_connection_timeout(0, 500000);
+		cli.set_read_timeout(0, 500000);
+		cli.set_write_timeout(0, 500000);
 
         if (auto res = cli.Get("/api/plugins")) {
             if (res->status == 200) {
@@ -590,6 +598,7 @@ string CoFrancePlugIn::LoadOCLData()
             }
             else {
                 cli.stop();
+                DisplayUserMessage("Message", "CoFrance PlugIn", string("Error fetching OCL data, server returned HTTP code: " + to_string(res->status) + " body: " + res->body).c_str(), false, false, false, false, false);
                 return "[]";
             }
         }
@@ -597,6 +606,7 @@ string CoFrancePlugIn::LoadOCLData()
         cli.stop();
     }
     catch (const std::exception& exc) {
+        DisplayUserMessage("Message", "CoFrance PlugIn", string("Error fetching OCL data: " + string(exc.what())).c_str(), false, false, false, false, false);
         return "[]";
     }
 
